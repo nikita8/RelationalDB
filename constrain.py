@@ -131,7 +131,6 @@ def get_attribute_constrain(attr):
                         break
  
     return attr_constrain
-
 # def chek_constrain(single_attribure,j):
 #     print(single_attribure,j)
 
