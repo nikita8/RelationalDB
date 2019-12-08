@@ -103,6 +103,7 @@ def get_attribute_constrain(attr):
                                     temp = user_input
                                     range_data[range_list[x]] = temp
                                     break
+                                
                                 else:
                                     print("wrong choice!!, try again")
                         attr_constrain[i] = range_data  
