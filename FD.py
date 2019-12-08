@@ -373,54 +373,7 @@ def print_mvd_fd(lhs,row,rhs):
     for i in  range(0,len(lhs)):
         print(lhs[i]+row+rhs[i],end =', ')
     print('')
-
-attr1 = input("Enter atributes ") 
-if not (attr1.isalpha()):
-    print('Attribute must be an alphabet type')
-    exit()
-print(attr1)
-fds_lhs=[]
-fds_rhs=[]
-mvds_lhs=[]
-mvds_rhs=[]
-closure_result=''
-#################ENTER MVDs and FDs###############################
-while(True):
-    str1 = input('Enter FD or MVD  or "done" to finished \n' )
-    if(str1 == 'done'):
-        break # exit the while loop
-    val= check_fd_mvd_format(str1)# return 1 for FD, 2 for MVD,and 0 wrong input with some comment
-    if(val== 1):
-        print("FD:",str1)
-        key1,val1 = get_fd(str1)
-        fds_lhs.append(key1)
-        fds_rhs.append(val1)
-    elif(val == 2):
-        print("MVD",str1)
-        key1,val1 = get_mvd(str1)
-        mvds_lhs.append(key1)
-        mvds_rhs.append(val1)
-    else:
-        print("wrong input, try again",str1)
-   
-##########################Validata MVD and FDs####################
-fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
-mvds_lhs,mvds_rhs = fds_mvds_validation(mvds_lhs,mvds_rhs,attr1,"MVD", '->->')
-if (not fds_lhs or not mvds_lhs ):
-    print('Since non FDs are valid,the program will terminate, Bye')
-    exit()
-
-######################### remove MVDs if there are already in FDs########
-fds_lhs,fds_rhs, mvds_lhs, mvds_rhs = mvds_in_fds(fds_lhs, fds_rhs, mvds_lhs, mvds_rhs)
-##########################Print FDs and MVDs###################
-print_mvd_fd(fds_lhs,'->',fds_rhs)
-print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
-
-#####################Remove FDs or MVDs#######################
-while(True):
-    str1 = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
-    if(str1 == 'done'):
-        break # exit the while loop
+def remove_fd_or_mvd(user_input):
     val= check_fd_mvd_format(str1)# return 1 for FD, 2 for MVD,and 0 wrong input with some comment
     if(val== 1):
         print("FD:",str1)
@@ -451,23 +404,87 @@ while(True):
             print('MVD not in MVDs list')
             print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
     else:
-        print("wrong input,try again",str1)
+        # print("wrong input,try again",str1)
+        return 0
+    if not(val == 0)
+        return 1
+#======================================
+# My format
+#  FDs
+# fds_lhs=[]
+# fds_rhs=[]
+#  MVDs
+# mvds_lhs=[]
+# mvds_rhs=[]
+# attribute = 'ABCDRSD'
+#======================================
+# attr1 = input("Enter atributes ") 
+# if not (attr1.isalpha()):
+#     print('Attribute must be an alphabet type')
+#     exit()
+# print(attr1)
+fds_lhs=[]
+fds_rhs=[]
+mvds_lhs=[]
+mvds_rhs=[]
+closure_result=''
+#################ENTER MVDs and FDs###############################
+# while(True):
+#     str1 = input('Enter FD or MVD  or "done" to finished \n' )
+#     if(str1 == 'done'):
+#         break # exit the while loop
+    val= check_fd_mvd_format(str1)# return 1 for FD, 2 for MVD,and 0 wrong input with some comment
+    # if(val== 1):
+    #     print("FD:",str1)
+        key1,val1 = get_fd(str1)
+        fds_lhs.append(key1)
+        fds_rhs.append(val1)
+    # elif(val == 2):
+    #     print("MVD",str1)
+        key1,val1 = get_mvd(str1)
+        mvds_lhs.append(key1)
+        mvds_rhs.append(val1)
+    # else:
+    #     print("wrong input, try again",str1)
+   
+##########################Validata MVD and FDs####################
+fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
+mvds_lhs,mvds_rhs = fds_mvds_validation(mvds_lhs,mvds_rhs,attr1,"MVD", '->->')
+if (not fds_lhs or not mvds_lhs ):
+    print('Since non FDs are valid,the program will terminate, Bye')
+    exit()
+
+######################### remove MVDs if there are already in FDs########
+fds_lhs,fds_rhs, mvds_lhs, mvds_rhs = mvds_in_fds(fds_lhs, fds_rhs, mvds_lhs, mvds_rhs)
 ##########################Print FDs and MVDs###################
 print_mvd_fd(fds_lhs,'->',fds_rhs)
 print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
+
+#####################Remove FDs or MVDs#######################
+# while(True):
+    # usert_input = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
+    # if(str1 == 'done'):
+        # break # exit the while loop
+    # return 1 if valid input Format(FD or MVD): however if does not match FD or MVD or will print a massage
+    # return 0 wrong input
+   val =  remove_fd_or_mvd(unser_input)
+    
+##########################Print FDs and MVDs###################
+# print_mvd_fd(fds_lhs,'->',fds_rhs)
+# print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
 #################Copute clousere of Seed#################################
-while(True):
-    str1 = input('Enter seed to compute closure or "quit" to exit program: ')
-    if(str1.isalpha()):
-        if(str1== 'quit'):
-            break#finish program
-        else:
+# while(True):
+#     seed = input('Enter seed to compute closure or "quit" to exit program: ')
+#     if(seed.isalpha()):
+#         if(seed== 'quit'):
+#             break#finish program
+#         else:
             # closure_result = closure(attr1, str1, LHS_fd, RHS_fd)
             # closure_result = closure(LHS_fd, RHS_fd, str1, attr1)
             # print(closure_result)
-            print(' {',str1,'}^+ :',closure(fds_lhs, fds_rhs, str1, attr1))
-    else:
-        continue# continue going through loop
+            print(' {',seed,'}^+ :',closure(fds_lhs, fds_rhs, seed, attr1))
+    # else:
+        # continue# continue going through loop
 # print("we will compute the key of FDs")
 list_keys=[]   
 #The following command will find keys
@@ -475,19 +492,20 @@ attr= sort_Item(attr1)# we sort attribute to compare with possible key
 # in get_key we compute the attr that are not in FDs and that are on the lhs
 possible_keys = get_keys(attr,fds_lhs, fds_rhs)
 
-print('possible keys: ',possible_keys)
+# print('possible keys: ',possible_keys)
 # in the for loop we parse those possible keys and compute the closure
 #if the closure== attr then we know is a key
-for i in possible_keys:
+# for i in possible_keys:
     # key_closure = closure(attr,i,LHS_fd,RHS_fd)
     key_closure = closure(fds_lhs, fds_rhs, i, attr)
     #check if key_closure is equal to attr
-    key_closure =sort_Item(key_closure)
-    print(' {',i,'}^+ =',key_closure)
+    key_closure = sort_Item(key_closure)#  so is ABC... and not CAB..
+    # print(' {',i,'}^+ =',key_closure)
+    # if a clousere(seed) == to attribue we know that it is a key
     if(key_closure == attr):
         list_keys.append(i)
-if(list_keys):
-    print('key(s) ',list_keys)
+# if(list_keys):
+#     print('key(s) ',list_keys)
     Which_NormalForm(list_keys,fds_lhs, fds_rhs)
 
 
