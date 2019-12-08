@@ -135,7 +135,6 @@ def get_attribute_constrain(attr):
 # def chek_constrain(single_attribure,j):
 #     print(single_attribure,j)
 
-
 attr=['A','B','C','D']
 # attr_cons= {'A':{'min':100,'max':200},'B':{'A':False}, 'B': {'<': 4}, 'C': False, 'D': False}
 # for i,j in attr_cons.items():
