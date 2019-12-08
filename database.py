@@ -1,6 +1,6 @@
 # import pandas as pd
-from table import *
-from relational_algebra import *
+from table import Table
+from relational_algebra import RelationalAlgebra
 
 class Database:
   def __init__(self, name="new_database"):
@@ -49,7 +49,7 @@ class Database:
 db = Database()
 table_name = 'first_table'
 second_table_name = 'second_table'
-attributes = ['A','B','C','D']
+attributes = {'A':'int','B':'string','C':'int','D':'string'}
 key = 'AB'
 table1 = db.create_table(table_name, {'name': table_name, 'attributes': attributes, 'fds': [], 'mvds': [], 'boolean_constraints': [], 'rows': [], 'key': key})
 table1.insert_tuple(row_data={'A': 1, 'B': 2, 'C': 3, 'D': 4})
@@ -70,15 +70,15 @@ table2.insert_tuple(row_data={'A': 1, 'B': 2, 'C': 3, 'D': 4})
 table2.insert_tuple(row_data={'A': 200, 'B': 3, 'C': 4, 'D': 5})
 db.show_table(second_table_name)
 
-table1.add_dependent_tables(table2)
+table1.add_associated_tables(table2)
 
 table1.delete_tuples({'A':200, 'B': 3})
 
-# rdb = RelationalAlgebra(table2, table1)
-# print(rdb.natural_join())
-# print(rdb.union())
-# print(rdb.cross_join())
-# print(rdb.difference())
+rdb = RelationalAlgebra(table2, table1)
+print(rdb.natural_join())
+print(rdb.union())
+print(rdb.cross_join())
+print(rdb.difference())
 
 # db.drop_table(table_name)
 # db.show_table(table_name)
