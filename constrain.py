@@ -89,7 +89,7 @@ def get_attribute_constrain(attr):
     return attr_constrain
 
 attr=['A','B','C','D']
-# list_age=[]
+list_age=[]
 
 # age_constrain(i,65,18)):
    

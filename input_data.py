@@ -579,6 +579,7 @@ def dec_table(table_name,dic_para):
         remove_table = input("Enter table name to remove :")
         remove_table = remove_table.strip().upper()
         
+        
         dic_para.pop('key', None)
     else:
         print("Enter 'add' / 'remove': ")
