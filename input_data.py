@@ -1,11 +1,11 @@
 import re
 import numpy as np
 # import FD
-from database import *
-from relational_algebra import * 
+from database import Database
+from relational_algebra import RelationalAlgebra
 
 def input_table_name():
-  table_name=input("Enter the name of the table/ Type quit to exit:")
+  table_name=input("Enter the name of the table/ Type quit to exit: ")
   table_name = table_name.upper().strip()
   if(table_name.casefold() == 'quit'):
     exit(0)
@@ -232,9 +232,9 @@ def input_foreign_constraints(tables, attributes, table_name, foreign_constraint
   foreign_constraint = input()
   foreign_constraint = foreign_constraint.strip().upper()
   if(foreign_constraint != 'QUIT'):
-      is_valid = check_format(foreign_constraint)
+      is_valid = check_format(foreign_constraint, attributes, tables, table_name)
       if is_valid:
-          foreign_constraints.add(foreign_constraint, attributes, tables, table_name)
+          foreign_constraints.add(foreign_constraint)
       else:
         print("Enter another Constraint::")
       input_foreign_constraints(tables, attributes, table_name, foreign_constraints, False)
@@ -293,8 +293,8 @@ def input_table_info(db):
   fds = input_fd(list(attributes.keys()))
   # mvds = input_mvd(list(attributes.keys()))
   mvds = []
-  # foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
-  foreign_constraints = {}
+  foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
+  # foreign_constraints = {}
   # TODO
   # fds = validate_decomp(fds, attributes)
   # keys = input_key(attributes, fds)
@@ -351,17 +351,38 @@ def group_tuples(table):
   attributes = input("Enter the attributes Eg: AB").strip().split()
   table.group_tuples(attributes)
 
-def input_operation(db):
+def create_table(db):
+  table = input_table_info(db)
+  db.create_table(table['name'], table)
+
+def input_operation(db, print_more_option=False, error_message=''):
+  if print_more_option:
+    more = input('Do you want to execute more data manipulations?yes/no: ').strip().lower()
+    if more != 'yes':
+      exit(0)
+    else:
+      if not db.tables:
+        print('Database empty. No tables.')
+        more = input('Do you want to create new table?yes/no: ').strip().lower()
+        if more == 'yes':
+          create_table(db)
+        else:
+          exit(0)
   operations = "1. Input Tuple. \n 2. Delete a tuple \n 3. Find Tuple \n 4. Group Tuples \n 5. Delete a table \n\n Two table operations: \n 6. Cross Join \n 7. Natural Join \n 8. Union \n 9. Intersection \n 10.Difference"
   print(operations)
-  operation = input("Enter the data manipulation option from the above list/ Type quit to exit:").strip()
+  operation = input("Enter the data manipulation option from the above list/ Type quit to exit: ").strip()
   if operation.lower() == 'quit':
     exit(0)
+  elif operation not in [str(i) for i in range(1, 11)]:
+      print("Invalid selection of option \n")
+      input_operation(db)
+
   operation = int(operation)
   if operation in range(1, 6):
     table = enter_table(db.tables)
+    
   elif operation in range(6, 11):
-    print("Enter name of two tables")
+    print("Enter name of two tables:")
     print("Table 1:")
     table1 = enter_table(db.tables)
     if table1:
@@ -369,36 +390,38 @@ def input_operation(db):
       table = enter_table(db.tables)
       if table:
         rdb = RelationalAlgebra(table1, table)
-  # Ask for another option
-  if not table:
-    input_operation(db.tables)
-  if operation == 1:
-    input_tuple(table, db.tables)
-  elif operation == 2:
-    delete_tuple(table)
-  elif operation == 3:
-    find_tuple(table)
-  elif operation == 4:
-    group_tuples(table)
-  elif operation == 5:
-    db.drop_table(table.name)
-  elif operation == 6:
-    print(rdb.cross_join())
-  elif operation == 7:
-    print(rdb.natural_join())
-  elif operation == 8:
-    print(rdb.union())
-  elif operation == 9:
-    print(rdb.intersection())
-  elif operation == 10:
-    print(rdb.difference())
-  input_operation(db)
+  # try:
+    if not table:
+      input_operation(db.tables)
+  
+    if operation == 1:
+      input_tuple(table, db.tables)
+    elif operation == 2:
+      delete_tuple(table)
+    elif operation == 3:
+      find_tuple(table)
+    elif operation == 4:
+      group_tuples(table)
+    elif operation == 5:
+      db.drop_table(table.name)
+    elif operation == 6:  
+      print(rdb.cross_join())
+    elif operation == 7:
+      print(rdb.natural_join())
+    elif operation == 8:
+      print(rdb.union())
+    elif operation == 9:
+      print(rdb.intersection())
+    elif operation == 10:
+      print(rdb.difference())
+  # except Exception as e:
+    # print(e)
+  input_operation(db, print_more_option=True)
 
 db = Database()
 while True:
-  table = input_table_info(db)
-  db.create_table(table['name'], table)
-  input_table = input("Do you want to enter new table (Yes/No):")
+  create_table(db)
+  input_table = input("Do you want to enter new table (Yes/No): ")
   input_table = input_table.strip().lower()
   if(input_table != 'yes'):
     break
