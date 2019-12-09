@@ -20,6 +20,7 @@ def input_table_attributes():
   while num_attr < 4:
     attr_input = input("Enter single character table Attribute name / Type quit to exit (Eg: A): ")
     attr_input = attr_input.strip().upper()
+   
     if attr_input == 'QUIT':
       if attributes:
         break
@@ -27,11 +28,15 @@ def input_table_attributes():
         print("Table should have atleast one attribute")
         continue
     elif attr_input:
+      if not re.match('[a-zA-Z+]',attr_input): 
+        print("Table Attributes must be only alphabets(A-Z).")
+        continue
       attr_input_type = get_attr_input_type(attr_input)
     else: 
       continue
     attributes[attr_input] = attr_input_type
     num_attr += 1 
+   
   return attributes
 
 def get_attr_input_type(attr):
@@ -54,12 +59,12 @@ def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=
     if(constraints == 'QUIT'):
         boolean_constraints = validate_boolean_constraints(boolean_constraints)
         if not boolean_constraints:
-            print("Empty boolean constraints after removing conflicting ones")
-            add_more = input("Do you want to add new boolean constraints(yes/no)?")
-            if add_more.strip().lower() == 'yes':
-              input_boolean_constraints(attributes, boolean_constraints)
-            else:
-              return boolean_constraints
+            print("Empty boolean constraints")
+            # add_more = input("Do you want to add new boolean constraints(yes/no)?")
+            # if add_more.strip().lower() == 'yes':
+            #   input_boolean_constraints(attributes, boolean_constraints)
+            # else:
+            #   return boolean_constraints
     else:
       valid_constraints = check_boolean_constraints(constraints, attributes)
       if(valid_constraints):
@@ -184,14 +189,15 @@ def input_fd(attributes, fds=set(), first_time=True):
   fd = fd.strip().upper() 
   if(fd != 'QUIT'):
     fds.add(fd)
-    input_fd(attributes, fds)
+    input_fd(attributes,fds,False)
   else:
     # lhs_fd, rhs_fd = take_fd_list(fds, attributes)
     # fds = set()
     # for lhs, rhs in zip(lhs_fd, rhs_fd):
     #   fds.add(f"{lhs}->{rhs}")
-    print("Valid Fds: ", fds)
-    fds = remove_fds(fds)
+    # print("Valid Fds: ", fds)
+    if fds:
+      fds = remove_fds(fds)
   return fds
   
 def remove_fds(fds):
@@ -211,10 +217,10 @@ def remove_fds(fds):
 
 def input_mvd(attributes, mvds=set(), first_time=True):
   if first_time:
-    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A ->->B")
+    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B")
   mvd = input()
   mvd = mvd.strip().upper()
-  if(mvd != 'quit'):
+  if(mvd != 'QUIT'):
     mvds.add(mvd)
     input_mvd(attributes, mvds, False)
   else:
@@ -252,6 +258,7 @@ def check_format(foreign_constraint, attr, tables, current_table):
       if(len(cons_split) == 2):
           column_name = cons_split[0].upper().strip()
           table_name = cons_split[1].upper().strip()
+          
           if(column_name and table_name):
               table = tables.get(table_name)
               if((column_name in attr) and table and (column_name in tables.attributes)):
@@ -291,8 +298,8 @@ def input_table_info(db):
   attributes = input_table_attributes()
   boolean_constraints = input_boolean_constraints(attributes)
   fds = input_fd(list(attributes.keys()))
-  # mvds = input_mvd(list(attributes.keys()))
-  mvds = []
+  mvds = input_mvd(list(attributes.keys()))
+  # mvds = []
   foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
   # foreign_constraints = {}
   # TODO
