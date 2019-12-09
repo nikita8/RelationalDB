@@ -33,6 +33,8 @@ class RelationalAlgebra:
     if not self.same_attributes_tables():
       print(f"Dfferent attributes for {self.table1.name} and {self.table2.name}") 
       return
+    print(self.table1.rows)
+    print(self.table2.rows)
     return pd.merge(self.table1.rows, self.table2.rows, how='outer')
     
   def intersection(self):
@@ -45,5 +47,5 @@ class RelationalAlgebra:
     if not self.same_attributes_tables():
       print(f"Dfferent attributes for {self.table1.name} and {self.table2.name}") 
       return
-    pd.concat([self.table1.rows, self.table2.rows, self.table2.rows]).drop_duplicates(keep=False)
+    return pd.concat([self.table1.rows, self.table2.rows, self.table2.rows]).drop_duplicates(keep=False)
   
