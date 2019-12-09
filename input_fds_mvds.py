@@ -187,22 +187,22 @@ def take_fd_list(fd_list,attr1):
     return fds_lhs, fds_rhs
 
 
-fds_lhs=[]
-fds_rhs=[]
-mdvs_lhs=[]
-mvds_rhs=[]
-#+++++++++
-attr1= "ABCD"
-fd_list=['A->B','A->B','AB->-CD','AB->D']
-fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
-mvd_list=['A->a->B','A->->C']
-mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
+# fds_lhs=[]
+# fds_rhs=[]
+# mdvs_lhs=[]
+# mvds_rhs=[]
+# #+++++++++
+# attr1= "ABCD"
+# fd_list=['A->B','A->B','AB->-CD','AB->D']
+# fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
+# mvd_list=['A->a->B','A->->C']
+# mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
 #+++++++++++++++++++
-print(fds_lhs)
-print(fds_rhs)
-print("here")
-print(mvds_lhs)
-print(mvds_rhs)
+# print(fds_lhs)
+# print(fds_rhs)
+# print("here")
+# print(mvds_lhs)
+# print(mvds_rhs)
 
 # #operator
 # a < 10 a >5 =valid
