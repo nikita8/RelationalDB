@@ -11,12 +11,12 @@ def is_int(user_input):
     return val
     
 
-def age_constrain(age,max,min):
-    if(age < min or age > max):
-        print('The max age is',max,' and the min',min)
-        return False
-    else:
-        return True
+# def age_constrain(age,max,min):
+#     if(age < min or age > max):
+#         print('The max age is',max,' and the min',min)
+#         return False
+#     else:
+#         return True
 def get_attribute_type(attr):
     attr_type={}
     # 1 for  string type
@@ -172,11 +172,11 @@ def chek_constrain(i,j,single_attr):
                 return True
             
             else:
-                print("number shoube between",max_range,'and',min_range)
+                print("number should between",max_range,'and',min_range)
                 return False
 
 
-
+###
  #             
  #              attr_constrain = get_attribute_constrain(attr_type)
  #              for i,j in attr_cons.items():
@@ -196,6 +196,7 @@ def chek_constrain(i,j,single_attr):
 
 # # age_constrain(i,65,18)):
 # attr_type = get_attribute_type(attr)
+
 # attr_constrain = get_attribute_constrain(attr_type)
 # print(attr_type)
 # print(attr_constrain)

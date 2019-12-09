@@ -406,7 +406,7 @@ def remove_fd_or_mvd(user_input):
     else:
         # print("wrong input,try again",str1)
         return 0
-    if not(val == 0)
+    if not(val == 0):
         return 1
 #======================================
 # My format
@@ -429,27 +429,32 @@ mvds_lhs=[]
 mvds_rhs=[]
 closure_result=''
 #################ENTER MVDs and FDs###############################
-# while(True):
-#     str1 = input('Enter FD or MVD  or "done" to finished \n' )
-#     if(str1 == 'done'):
-#         break # exit the while loop
+while(True):
+    str1 = input('Enter FD or MVD  or "done" to finished \n' )
+    if(str1 == 'done'):
+        break # exit the while loop
     val= check_fd_mvd_format(str1)# return 1 for FD, 2 for MVD,and 0 wrong input with some comment
-    # if(val== 1):
-    #     print("FD:",str1)
+    if(val== 1):
+        print("FD:",str1)
         key1,val1 = get_fd(str1)
         fds_lhs.append(key1)
         fds_rhs.append(val1)
-    # elif(val == 2):
-    #     print("MVD",str1)
+    elif(val == 2):
+        print("MVD",str1)
         key1,val1 = get_mvd(str1)
         mvds_lhs.append(key1)
         mvds_rhs.append(val1)
-    # else:
-    #     print("wrong input, try again",str1)
+    else:
+        print("wrong input, try again",str1)
    
 ##########################Validata MVD and FDs####################
+attr1='ABC'
+print(fds_lhs)
+print(mvds_lhs)
 fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
+
 mvds_lhs,mvds_rhs = fds_mvds_validation(mvds_lhs,mvds_rhs,attr1,"MVD", '->->')
+
 if (not fds_lhs or not mvds_lhs ):
     print('Since non FDs are valid,the program will terminate, Bye')
     exit()
@@ -462,12 +467,12 @@ print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
 
 #####################Remove FDs or MVDs#######################
 # while(True):
-    # usert_input = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
-    # if(str1 == 'done'):
-        # break # exit the while loop
-    # return 1 if valid input Format(FD or MVD): however if does not match FD or MVD or will print a massage
-    # return 0 wrong input
-   val =  remove_fd_or_mvd(unser_input)
+#     usert_input = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
+#     if(str1 == 'done'):
+#         break # exit the while loop
+#     return 1 #if valid input Format(FD or MVD): however if does not match FD or MVD or will print a massage
+#     return 0 #wrong input
+#    val =  remove_fd_or_mvd(unser_input)
     
 ##########################Print FDs and MVDs###################
 # print_mvd_fd(fds_lhs,'->',fds_rhs)
@@ -482,7 +487,7 @@ print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
             # closure_result = closure(attr1, str1, LHS_fd, RHS_fd)
             # closure_result = closure(LHS_fd, RHS_fd, str1, attr1)
             # print(closure_result)
-            print(' {',seed,'}^+ :',closure(fds_lhs, fds_rhs, seed, attr1))
+            # print(' {',seed,'}^+ :',closure(fds_lhs, fds_rhs, seed, attr1))
     # else:
         # continue# continue going through loop
 # print("we will compute the key of FDs")
@@ -492,10 +497,10 @@ attr= sort_Item(attr1)# we sort attribute to compare with possible key
 # in get_key we compute the attr that are not in FDs and that are on the lhs
 possible_keys = get_keys(attr,fds_lhs, fds_rhs)
 
-# print('possible keys: ',possible_keys)
+print('possible keys: ',possible_keys)
 # in the for loop we parse those possible keys and compute the closure
 #if the closure== attr then we know is a key
-# for i in possible_keys:
+for i in possible_keys:
     # key_closure = closure(attr,i,LHS_fd,RHS_fd)
     key_closure = closure(fds_lhs, fds_rhs, i, attr)
     #check if key_closure is equal to attr
@@ -504,8 +509,8 @@ possible_keys = get_keys(attr,fds_lhs, fds_rhs)
     # if a clousere(seed) == to attribue we know that it is a key
     if(key_closure == attr):
         list_keys.append(i)
-# if(list_keys):
-#     print('key(s) ',list_keys)
+if(list_keys):
+    print('key(s) ',list_keys)
     Which_NormalForm(list_keys,fds_lhs, fds_rhs)
 
 
