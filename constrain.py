@@ -11,12 +11,12 @@ def is_int(user_input):
     return val
     
 
-def age_constrain(age,max,min):
-    if(age < min or age > max):
-        print('The max age is',max,' and the min',min)
-        return False
-    else:
-        return True
+# def age_constrain(age,max,min):
+#     if(age < min or age > max):
+#         print('The max age is',max,' and the min',min)
+#         return False
+#     else:
+#         return True
 def get_attribute_type(attr):
     attr_type={}
     # 1 for  string type
@@ -84,9 +84,29 @@ def get_attribute_constrain(attr):
                         range_data[range_list[x]] = temp
                         break
                     else:
+<<<<<<< HEAD
+                        print('Invalid : X > '+m)
+                        return False # violation single_attr < m
+        else:
+            for m,n in j.items():
+                # ['max_range','min_range']
+                if(m == 'max_range'):
+                    max_range = n
+                else:
+                    min_range = n
+            # print("max",max_range)
+            # print("min",min_range)
+            if(single_attr < max_range and single_attr > min_range):
+                return True
+            
+            else:
+                print("number should between",max_range,'and',min_range)
+                return False
+=======
                         print("wrong choice!!, try again")
             attr_constrain[i]= range_data
     return attr_constrain
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
 
 attr=['A','B','C','D']
 list_age=[]
@@ -98,8 +118,35 @@ attr_constrain = get_attribute_constrain(attr_type)
 print(attr_type)
 print(attr_constrain)
 
+<<<<<<< HEAD
+###
+ #             
+ #              attr_constrain = get_attribute_constrain(attr_type)
+ #              for i,j in attr_cons.items():
+#               chek_constrain(i,j,tuple_attr[count])
+ #      tuple_attr:  is attritute to be testes
+# attr=['A','B','C','D']
+# tuple_attr=[20,5,'C','D']
+# attr_cons= {'A':{'min_range':100,'max_range':200},'B': {'<': 4}, 'C': False, 'D': False}
+# count =0
+# for i,j in attr_cons.items():
+    if(chek_constrain(i,j,tuple_attr[count])):
+        print("pass",i,j)
+    else:
+        print("not pass",i,j)
+    count = count +1
+# list_age=[]
+
+# # age_constrain(i,65,18)):
+# attr_type = get_attribute_type(attr)
+
+# attr_constrain = get_attribute_constrain(attr_type)
+# print(attr_type)
+# print(attr_constrain)
+=======
 
 
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
 
 
 # attri={'A':{'min':100,'max':200},'B':{'A':False},'C':{'min':100},'D':{'min':100}}
