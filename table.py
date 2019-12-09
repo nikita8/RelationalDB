@@ -6,8 +6,8 @@ class Table:
     self.name = name
     self.attributes_type = attributes
     self.attributes = list(attributes.keys())
-    self.fds = fds
-    self.mvds = mvds
+    self.fds = list(fds)
+    self.mvds = list(mvds)
     self.key = key
     self.boolean_constraints = boolean_constraints
     self.rows = pd.DataFrame(rows, columns = self.attributes)
@@ -19,7 +19,7 @@ class Table:
     return self.__dict__
   
   def __repr__(self):
-    return f"name={self.name}, attributes={self.attributes}, fds={self.fds}, mvds={self.mvds}, boolean_constraints={self.boolean_constraints}, foreign_key_constraints={self.foreign_key_constraints}"
+    return f"name={self.name}, attributes={self.attributes}, fds={self.fds}, mvds={self.mvds}, boolean_constraints={self.boolean_constraints}, foreign_key_constraints={self.foreign_key_constraints}, keys={self.keys}"
 
   def insert_tuple(self, row_data):
     key_attributes = list(self.key)
@@ -61,7 +61,7 @@ class Table:
     self.find(key, data).all(axis=1).any()
 
   def find(self, key, data):
-    query = ' and '.join([f'{k}=={v}' for k, v in data.items() if k in key])
+    query = ' and '.join([f'{k}=="{v}"' for k, v in data.items() if k in key])
     return self.rows.query(query)
   
   def add_associated_tables(self, table):
