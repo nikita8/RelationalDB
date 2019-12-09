@@ -1,642 +1,432 @@
 import re
 import numpy as np
+# import FD
+from database import Database
+from relational_algebra import RelationalAlgebra
 
+def input_table_name():
+  table_name=input("Enter the name of the table/ Type quit to exit: ")
+  table_name = table_name.upper().strip()
+  if(table_name.casefold() == 'quit'):
+    exit(0)
+  if not table_name:
+    print("Table name cannot be blank")
+    input_table_name()
+  return table_name
 
-def input_data():
-    
-    return input_table_name(dic_para)
-   
-def input_table_name(dic_para):
-    table_name=input("Enter name of the table:")
-    table_name = table_name.upper().strip()
+def input_table_attributes():
+  num_attr = 0
+  attributes = {}
+  while num_attr < 4:
+    attr_input = input("Enter single character table Attribute name / Type quit to exit (Eg: A): ")
+    attr_input = attr_input.strip().upper()
+    if attr_input == 'QUIT':
+      if attributes:
+        break
+      else:
+        print("Table should have atleast one attribute")
+        continue
+    elif attr_input:
+      attr_input_type = get_attr_input_type(attr_input)
+    else: 
+      continue
+    attributes[attr_input] = attr_input_type
+    num_attr += 1 
+  return attributes
 
-    if(len(table_name) > 0):
-        input_attrs(table_name,dic_para)
+def get_attr_input_type(attr):
+    attr_input_type = input(f"Enter the type of attribute {attr}: 1: 'string' and 2: 'int'):")
+    attr_input_type = int(attr_input_type.strip())
+    if attr_input_type not in [1, 2]:
+      print('Invalid Type')
+      get_attr_input_type(attr)
+    if attr_input_type == 1: 
+      attr_input_type = 'string'
     else:
-        print("Table name should not be blank")
-        p = input("Enter continue to re-enter table name:")
-        if(p.casefold() == 'continue'):
-            input_data()
-        else:
-            return
-dic_para = {}
-
-def input_attrs(table_name,dic_para):
-    attr_input = ''
-    num_attr=0
-    attr = {}
-
-    while num_attr < 4:
-        attr_input = input("Enter Attribute name or Type quit (Attribute name must be a single character):")
-        attr_input = attr_input.strip()
-        if( len(attr_input) == 1):
-            
-            add_input_type = True
-            while(add_input_type):
-                attr_input_type = get_attr_input_type()
-                attr_input_type = attr_input_type.strip()
-                if(attr_input_type.casefold() == 'string' or attr_input_type.casefold() == 'int'):
-                    add_input_type = False
-                    attr.update({attr_input.upper():attr_input_type.casefold()})
-                else:
-                    print("Attribute type must be 'string' or 'int'")
-                    
-            num_attr+=1
-        else:
-            if(attr_input.casefold() == 'quit'):
-                break
-            else:
-                if(len(attr_input) > 1):
-                    print("Attribute length is greater than 1")
-                else:
-                    print("Attribute name must not be blank")
-        
-    tab_name_para = {}
-    
-    tab_name_para.update({'attr':attr})
-    dic_para.update({table_name:tab_name_para})
-    
-    bool_str = []
-    bool_array = []
-    
-    print("Type list of constraints / Type 'quit' to exit (Attribute op Val):")
-    input_boolean_cons(table_name,dic_para,bool_str,bool_array)
-
-
-def get_attr_input_type():
-    attr_input_type = input("Enter type of attribute you entered(Attribute type should be 'string' or 'int'):")
-    attr_input_type = attr_input_type.strip()
+      attr_input_type = 'int'
     return attr_input_type
-    
-key_dic = {}
-def input_boolean_cons(table_name,dic_para,bool_str,bool_array):
-    
-   
-    bool_str = ""
-    cons = input()  
-    cons = cons.strip()  
-    if(cons.casefold() != 'quit'):
-       
-        bool_str = cons.upper()
-        bool_array = list(filter(None, bool_array))
-        valid_cons = check_bool_constraint(bool_str,table_name,bool_array)
-        if(valid_cons):
-            bool_array.append(bool_str)
-        input_boolean_cons(table_name,dic_para,bool_str,bool_array)
-    else:
-        conflict_array=[]
-        print("Checking for conflicting Boolean conditions...")
-        conflict_array = check_bool_conflict(bool_array)
-        if(len(conflict_array) > 0):
-            print('Following are the conflict boolean contraints list:')
-            print(conflict_array)
-            print("removing those from boolean constraints list...")
-            for i in conflict_array:
-                bool_array.remove(i)
-        else:
-            print('There is no conflicting boolean constraints.')    
-        if(len(bool_array) == 0):
-            print("All the given boolean constraints are conflicting.")
-            print("No boolean Constraint is added in list...")
-        dic_para.get(table_name).update({'boolean_cons':bool_array})
-        
-        fds = []
-        print("Type list of FD's / Type 'quit' to exit:")
-        input_fd(table_name,dic_para,fds)
 
-    
-def input_fd(table_name,dic_para,fds):
-    fd = input()
-    fd = fd.strip()   
-    if(fd.casefold() != 'quit'):
-        fds.append(fd.upper())
-        input_fd(table_name,dic_para,fds)
-    else:
-        
-        ask_to_remove_fd(fds,table_name,dic_para)
-        
-        
-def ask_to_remove_fd(fds,table_name,dic_para):
-    c = input("Do you want to remove any Functional Dependency (Yes/No):")
-    c = c.strip()
-    if(c.casefold() == 'yes'):
-        remove_fd(fds,table_name,dic_para)
-    else:
-      
-        dic_para.get(table_name).update({'FD':fds})
-      
-        print("Type list of MVD's / Type 'quit' to exit:")
-        mvds = []
-        input_mvd(table_name,dic_para,mvds)
-        
-def get_nf(table_name,dic_para,fds):
-    lhs=[]
-    rhs=[]
-    attr=[]
-    for fd in fds:
-        fd_split = fd.split("->")
-        lhs.append(fd_split[0])
-        rhs.append(fd_split[1])
-    for i in dic_para.get(table_name).get('attr').keys():
-        attr.append(i)
-    keys_list = get_keys(attr,lhs,rhs)
-
-    return Which_NormalForm(keys_list,lhs,rhs)
-def get_fd_keys(table_name,fds):
-    lhs=[]
-    rhs=[]
-    attr=[]
-    for fd in fds:
-        fd_split = fd.split("->")
-        lhs.append(fd_split[0])
-        rhs.append(fd_split[1])
-    for i in dic_para.get(table_name).get('attr').keys():
-        attr.append(i)
-    keys_list = get_keys(attr,lhs,rhs)
-    return keys_list
-
-# def check_all_fds(fds,table_name,dic_para):
-#     # check_conflict_fd(fds,table_name,dic_para)
-
-
-        
-def remove_fd(fds,table_name,dic_para):
-    remove_fd = input('Enter functional Dependency to remove:')
-    remove_fd = remove_fd.strip()
-    if(remove_fd.upper() in fds):
-        fds.remove(remove_fd.upper())
-        print("Entered fd is removed.")
-        ask_to_remove_fd(fds,table_name,dic_para)
-    else:
-        print('Entered fd not exists')
-        ask_to_remove_fd(fds,table_name,dic_para)
-        
-def input_mvd(table_name,dic_para,mvds):
-    mvd = input()
-    mvd = mvd.strip()
-    if(mvd.casefold() != 'quit'):
-        mvds.append(mvd.upper())
-        input_mvd(table_name,dic_para,mvds)
-    else:
-        # final_mvds_list = check_all_mvds(mvds,table_name,dic_para)
-        # dic_para.get(table_name).update({'MVD':final_mvds_list})
-
-        dic_para.get(table_name).update({'MVD':mvds})
-        
-        forgn_cons=[]
-        print("Enter Foreign Constraint:-")
-        print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit:")
-        
-        input_foreign_constraints(table_name,dic_para,forgn_cons)
-        
-    
-def ask_to_add_table():
-    
-    c = input("Do you want to enter new table (Yes/No):")
-    c = c.strip()
-    if(c.casefold() == 'yes'):
-        input_data()
-    else:
-        print("DIC_PARA:::",dic_para)
-        
-def ask_for_keys(table_name,dic_para):
-    tname = input("Enter table name to enter keys of particular table / Enter 'quit' to exit:")
-    tname = tname.strip().upper()
-    if(len(tname) > 0):
-        if(tname.casefold() != 'quit'):
-            
-            key = input('Enter key for table: ')
-            key = key.strip()
-            check_table_key(tname,key,dic_para)
-        else:
-            ask_to_add_table()
-    else:
-        print("Table name should not be blank")
-
-def check_table_key(table_name,key,dic_para):
-    attr = ['A','B','C']
-    lhs = ['A','B','C']
-    rhs = ['A','B','C']
-    keys = []
-    keys_list = get_keys(attr,lhs,rhs)
-    if(key.upper() in keys_list):
-        if(dic_para.keys() in ['Keys']):
-            keys = (dic_para.get(table_name).get('Keys')).extend(keys)
-            dic_para.get(table_name).update({'Keys':keys})
-        else:
-            keys.append(key)
-            dic_para.get(table_name).update({'Keys':keys})
-            ask_for_keys(table_name,dic_para)
-
-    else:
-        print('Key must be from ',keys_list)
-        ask_for_keys(table_name,dic_para)
-
-def isAttributeInFD(i,lhs):
-    for item in lhs:
-        if(len(item) > 1):# ex. i= A !=AB(item of lhs) so breack down if len(item) > 1 
-            for j in item:
-                if(i in j):
-                    return True
-    return False
-
-def get_keys(attr,lhs,rhs):
-    part_Of_Key=''
-    pos_keys=[]
-    #Case 1. get the attributes that are not in FDs
-    for i in attr:
-        if(i in lhs or i in rhs):#if a single attr is lhs or rhs then it will not be part of all keys
-            continue
-        elif(i not in lhs):# only check the lhs since it can have more than 1 attr in lhs
-            if(not isAttributeInFD(i,lhs)):# this method will break down a indivudal lhs and compare to single attr
-                # if it can not find will add to partofKey
-                part_Of_Key += i
-        else:
-            part_Of_Key += i# must be part to key if no in LHS or RHS 
-    # Case 2. There is an An Atribute on one lhs and not in all rhs or the rest of lhs FDs.
-    #        so this attribute will be part of key
-    lhs_key = ''
-    for i in lhs:
-        if(len(i) > 1):
-            for j in i:#check every single atrr on lhs
-                if(j not in lhs and j not in rhs):
-                    lhs_key += j
-    # add all the lhs + attr that is not in FDS as part of possible key
-    for i in lhs:
-        get_key = part_Of_Key + i
-        if(lhs_key in i):
-            #if not in keys list add
-            if not (get_key in pos_keys):
-                pos_keys.append(get_key)
-        else:
-            get_key += lhs_key
-            #if not in keys list add
-            if not (get_key in pos_keys):
-                pos_keys.append(get_key)
-    return pos_keys
-
-def checkBcnf(keys,lhs):
-    bcnf = True
-    count = 0
-    for l in lhs:
-        if(l not in keys):
-            count+=1
-            break
-    
-    if count > 0:
-        bcnf = False
-       
-  
-    return bcnf
-
-def check3nf(keys,rhs):
-    is3Nf = False
-    count = 0
-    keyAttrs = []
-    
-    for k in keys:
-        keyAttrs.extend(list([char for char in k]))
-
-    for r in rhs:
-        if(r in keyAttrs):
-            count+=1
-            break
-
-    if(count > 0):
-        is3Nf = True        
-            
-    return is3Nf
-  
-def check1Nf(keys,lhs,rhs):
-    is1Nf = False
-    isNotKey = False
-    keyAttrs=[]
-
-    for k in keys:
-        for l in range(len(lhs)):
-            keyAttrs.append([char for char in k])
-            lhsAttrs = []
-            keyAttrs = []
-            lhsAttrs.append([char for char in lhs[l]])
-           
-            isNotKey = check_equal(lhsAttrs,keyAttrs)
-            list(filter(lambda x: x not in keyAttrs,lhsAttrs))
-            
-            if((isNotKey == True) and (not lhsAttrs) and (isRhsPartialKey(rhs[l],keys) == False)):
-                is1Nf = True
-                break
-        if(is1Nf):
-            break
-    return is1Nf
-
-def check_equal(lhsAttrs,keyAttrs):
-    isNotKey = False
-    if(lhsAttrs != keyAttrs):
-        isNotKey = True
-    return isNotKey
-
-
-def isRhsPartialKey(rhs,keys):
-    rhsKeyAttr = False
-    rhsAttrs = []
-    for k in keys:
-        for r in rhs:
-            if(r in k):
-                rhsKeyAttr = True
-                break
-        
-    return rhsKeyAttr
-
-def Which_NormalForm(keys,lhs,rhs):
-    
-    normalForm = ""
-    if (checkBcnf(keys,lhs) == True):
-        normalForm = "BCNF"
-    elif(check3nf(keys,rhs) == True):
-        normalForm = "3NF"
-    elif(check1Nf(keys,lhs,rhs) == True):
-        normalForm = "1NF"
-    else:
-        normalForm = "2NF"
-    
-
-    return normalForm
-
-def find_keys(table_name,dic_para):
-    key_dic.update({'abc':{'keys':'A'}})
-    return key_dic
-    
-   
-def check_bool_constraint(bool_str,table_name,bool_array):
-    valid_cons = False
-    bool_split = []
-    table_attr = []
-    for i in dic_para.get(table_name).get('attr').keys():
-        table_attr.append(i)
-   
-    if(bool_str[0] in table_attr):
-        bool_split = re.split('\W+',bool_str)
-     
-        if((len(bool_split)==2)):
-            if((len(re.findall('\W+',bool_str)) > 0) and (len(bool_split[0]) > 0) and (len(bool_split[1]) > 0) ):
-                bool_attr = bool_split[0].strip()
-                bool_op = re.findall('\W+',bool_str)[0].strip()
-                bool_val = bool_split[1].strip()
-          
-                valid_cons = check_non_std_constraint(bool_str,table_name,bool_array,bool_attr,bool_op,bool_val)
+def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=True):
+    if first_time:
+        print("Enter list of constraints / Type 'quit' to exit (Attribute op Val) Eg: A > 5:")
+    constraints = input()
+    constraints = constraints.strip().upper()
+    if(constraints == 'QUIT'):
+        boolean_constraints = validate_boolean_constraints(boolean_constraints)
+        if not boolean_constraints:
+            print("Empty boolean constraints after removing conflicting ones")
+            add_more = input("Do you want to add new boolean constraints(yes/no)?")
+            if add_more.strip().lower() == 'yes':
+              input_boolean_constraints(attributes, boolean_constraints)
             else:
-                print("Violating boolean constraint:",bool_str)
-                print("It must be as 'attr op val' eg:(A>10).")
-                print("Add another boolean constraint:")
+              return boolean_constraints
+    else:
+      valid_constraints = check_boolean_constraints(constraints, attributes)
+      if(valid_constraints):
+        boolean_constraints.add(constraints)
+      input_boolean_constraints(attributes, boolean_constraints, False)
+      return boolean_constraints
+
+def validate_boolean_constraints(boolean_constraints):
+    print("Checking for conflicting Boolean conditions...")
+    conflicting_constraints = check_conflicting_constraints(boolean_constraints)
+    if conflicting_constraints:
+        print('Following are the conflicting boolean contraints:')
+        print(conflicting_constraints)
+        print("Removing those from boolean constraints list...")
+        # for constraints in conflicting_constraints:
+        #     boolean_constraints.remove(constraints)
+        boolean_constraints = boolean_constraints - conflicting_constraints
+    else:
+        print('There is no conflicting boolean constraints.')   
+    return  boolean_constraints
+   
+def check_conflicting_constraints(boolean_constraints):
+  conflicting_contraints = set()
+  loop_constraints = set()
+  for constraint in boolean_constraints:
+    add_cons_to_conflict = False
+    loop_constraints.add(constraint)
+    validating_constraints = boolean_constraints - loop_constraints - conflicting_contraints
+    for another_constraint in validating_constraints:
+      if(constraint[0].strip() == another_constraint[0].strip()):
+        bool_split_i = re.split('\W+',constraint)
+        bool_split_x = re.split('\W+',another_constraint)
+        constraint_operator = re.findall('\W+',constraint)
+        another_constraint_operator = re.findall('\W+',another_constraint)
+        if(np.array_equal(constraint_operator,another_constraint_operator)):
+          if(bool_split_i[1] == bool_split_x[1]):
+            print('Duplicated constraints ',constraint,'and ',another_constraint)
+            add_cons_to_conflict = True
+          else:
+            print("Same attribute cannot have different values ", constraint,'and ',another_constraint)
+            add_cons_to_conflict = True
         else:
-            print("Violating boolean constraint:",bool_str)
+          is_valid = is_valid_boolean_contraints(constraint_operator, another_constraint_operator, bool_split_i[1], bool_split_x[1])
+          if not is_valid:
+            print("Conflicting boolean constraints: ", constraint,'and ',another_constraint)
+          add_cons_to_conflict = True
+      else:
+        continue
+
+    if add_cons_to_conflict:
+      conflicting_contraints.add(constraint)
+      conflicting_contraints.add(another_constraint)
+    
+  return conflicting_contraints
+
+def is_valid_boolean_contraints(constraint_operator, another_constraint_operator, constraint, another_cons):
+  if(constraint_operator in ['>','>='] and another_constraint_operator in ['<','<='] ): 
+    if Constraint > another_cons: 
+      return False
+  elif(constraint_operator == '>' and another_constraint_operator == '>='): 
+    if Constraint != another_cons: 
+      return False
+  elif(constraint_operator == '<' and another_constraint_operator == '<='): 
+    if constraint != another_cons: 
+      return False
+  elif(constraint_operator in ['<','<='] and another_constraint_operator in ['>','>=']): 
+    if Constraint < another_cons: 
+      return False 
+  else: 
+    return False
+  return True
+
+def check_boolean_constraints(boolean_constraint, attributes):
+  table_attributes = list(attributes.keys())
+  if boolean_constraint[0] in table_attributes:
+    splitted_constraints = re.split('\W+', boolean_constraint)
+    if( len(splitted_constraints) == 2 ):
+        attribute, contraint_value = splitted_constraints
+        if(re.findall('\W+', boolean_constraint) and attribute and contraint_value):
+            attribute = attribute.strip()
+            attr_type = attributes.get(attribute)
+            bool_operator = re.findall('\W+', boolean_constraint)[0].strip()
+            contraint_value = contraint_value.strip()
+            return is_valid_contraints(attribute, bool_operator, contraint_value, attr_type, boolean_constraint)
+        else:
+            print("Violating boolean constraint: ", boolean_constraint)
             print("It must be as 'attr op val' eg:(A>10).")
             print("Add another boolean constraint:")
-    elif(re.match('\W+',bool_str[0])):
-        # elif(bool_str[0] in ["'",'"']):
-        print(bool_str, " is not valid boolean Constraint.")
-        print("It must be as ' A>10 '.")
-        print("Add another boolean constraint:")
     else:
-        print("Given Boolean contraint attribute is not valid")
-        print("Boolean Constraint attribute must be from ",table_attr)
-        print("Add another boolean constraint:")
+      print("Violating boolean constraint: ", boolean_constraint)
+      print("It must be of format 'attr op val' eg:(A>10).")
+      print("Add another boolean constraint:")
+  elif(re.match('\W+',boolean_constraint[0])):
+    print(boolean_constraint, " is not valid boolean Constraint.")
+    print("It must be as ' A>10 '.")
+    print("Add another boolean constraint:")
+  else:
+    print("Given Boolean constraint attribute is not valid")
+    print("Boolean Constraint attribute must be table attributes:",table_attributes)
+    print("Add another boolean constraint:")
+  return False
    
+def is_valid_contraints(boolean_attribute, boolean_operator, boolean_value, attr_type, input_boolean_str):
+  if(attr_type == 'string'):
+    if(boolean_operator not in ['==', '<>']):
+      print("Violating boolean constraint:", input_boolean_str)
+      print(f"Attribute '{boolean_attribute}' is type 'string' (operand must be '==' or '<>')")
+      print("Add another boolean constraint:")
+      return False
+  elif(attr_type == 'int'):
+    if(boolean_operator not in ['==','<>','>','>=','<','<=']):
+      print("Violating Non standard boolean constraint:", input_boolean_str)
+      print(f"Attribute '{boolean_attribute}' is type 'int' (operand must be '==' or '<>' or '>' or '>=' or '<' or '<=')")
+      print("Add another boolean constraint:")
+      return False
+  return True
+    
+def input_fd(attributes, fds=set(), first_time=True):
+  if first_time:
+    print("Enter FD's / Type 'quit' to exit and Press enter to add another fd: Eg: A->B")
+  fd = input()
+  fd = fd.strip().upper() 
+  if(fd != 'QUIT'):
+    fds.add(fd)
+    input_fd(attributes, fds)
+  else:
+    # lhs_fd, rhs_fd = take_fd_list(fds, attributes)
+    # fds = set()
+    # for lhs, rhs in zip(lhs_fd, rhs_fd):
+    #   fds.add(f"{lhs}->{rhs}")
+    print("Valid Fds: ", fds)
+    fds = remove_fds(fds)
+  return fds
+  
+def remove_fds(fds):
+  remove_fd = input("Do you want to remove any Functional Dependency (Yes/No):")
+  remove_fd = remove_fd.strip()
+  if(remove_fd.casefold() == 'yes'):
+    fd = input('Enter functional Dependency to remove:')
+    fd = fd.strip().upper()
+    if(fd in fds):
+      fds.discard(fd)
+      print(f"Fd '{fd}' is removed.")
+      remove_fds(fds)
+    else:
+      print('Entered fd not exists')
+      remove_fds(fds)
+  return fds
 
-    return valid_cons
-   
-def check_non_std_constraint(bool_str,table_name,bool_array,bool_attr,bool_op,bool_val):
-   
-    valid_cons = False
-    if(dic_para.get(table_name).get('attr').get(bool_attr) == 'string'):
-       
-        if(bool_op not in ['==','<>']):
-            print("Violating Non standard boolean constraint:",bool_str)
-            print("attribute '",bool_attr,"' is type 'string' (operand must be '==' or '<>')")
-            print("add another boolean constraint:")
-        else:
-            valid_cons = True
-    elif(dic_para.get(table_name).get('attr').get(bool_attr) == 'int'):
-            
-        if(bool_op not in ['==','<>','>','>=','<','<=']):
-            print("Violating Non standard boolean constraint:",bool_str)
-            print("attribute '",bool_attr,"' is type 'string' (operand must be '==' or '<>' or '>' or '>=' or '<' or '<=')")
-            print("add another boolean constraint:")
-        else:
-            valid_cons = True
-    
-    return valid_cons  
-    
-
-def check_bool_conflict(bool_array):
-    bool_attr = []
-    bool_op = []
-    bool_val = []
-    conflict_array = []
-    done_arr=[]
-    attr = list([x[0] for x in bool_array])
-    
-    for i in range(len(bool_array)):
-        add_cons_to_conflict = False
+def input_mvd(attributes, mvds=set(), first_time=True):
+  if first_time:
+    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A ->->B")
+  mvd = input()
+  mvd = mvd.strip().upper()
+  if(mvd != 'quit'):
+    mvds.add(mvd)
+    input_mvd(attributes, mvds, False)
+  else:
+    # lhs_mvd, rhs_mvd = take_mvd_list(mvds, attributes)
+    # mvds = set()
+    # for lhs, rhs in zip(lhs_mvd, rhs_mvd):
+    #   mvds.add(f"{lhs}->->{rhs}")
+    print("Valid MVDs: ", mvds)
+  return mvds
         
-        if(bool_array[i] not in conflict_array):
-            for x in range(len(bool_array)):
-                
-                if(x != i):
-                    
-                    if(bool_array[i][0].strip() == bool_array[x][0].strip()):
-                        bool_split_i = re.split('\W+',bool_array[i])
-                        bool_split_x = re.split('\W+',bool_array[x])
-                        bool_op_i = re.findall('\W+',bool_array[i])
-                        bool_op_x = re.findall('\W+',bool_array[x])
-                
-                        if(np.array_equal(bool_op_i,bool_op_x)):
-                            if(bool_split_i[1] == bool_split_x[1]):
-                                print('Two same value',bool_array[i],'and',bool_array[x])
-                                add_cons_to_conflict = True
-                
-                            else:
-                
-                                print("Same attribute dont have different value",bool_array[i],'and',bool_array[x])
-                                add_cons_to_conflict = True
-                        else:
-                
-                            print("same attribute should not have two different operand",bool_array[i],'and',bool_array[x])
-                            add_cons_to_conflict = True
-                    else:
-                        continue
+def input_foreign_constraints(tables, attributes, table_name, foreign_constraints=set(), first_time=True):
+  if first_time:
+    print("Enter Foreign Constraint:-")
+    print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit:")
+  foreign_constraint = input()
+  foreign_constraint = foreign_constraint.strip().upper()
+  if(foreign_constraint != 'QUIT'):
+      is_valid = check_format(foreign_constraint, attributes, tables, table_name)
+      if is_valid:
+          foreign_constraints.add(foreign_constraint)
+      else:
+        print("Enter another Constraint::")
+      input_foreign_constraints(tables, attributes, table_name, foreign_constraints, False)
+  else:
+    constraints = {}
+    for constraint in foreign_constraints:
+      column_name, table_name = constraint.strip().split(":")
+      constraints[table_name.strip()] = column_name.strip()
+    return constraints
+        
+def check_format(foreign_constraint, attr, tables, current_table):
+  isvalid = False
+  if(':' in foreign_constraint):
+      cons_split = foreign_constraint.split(":")
+      if(len(cons_split) == 2):
+          column_name = cons_split[0].upper().strip()
+          table_name = cons_split[1].upper().strip()
+          if(column_name and table_name):
+              table = tables.get(table_name)
+              if((column_name in attr) and table and (column_name in tables.attributes)):
+                isvalid = True
+              else:
+                if((column_name not in attr) and not table):
+                  print("Both column and table does not exist")
+                elif((column_name in attr) and not table):
+                  print("Table does not exist")
+                elif(column_name not in attr):
+                  print(f"The table '{current_table}' does not have attribute '{column_name}'")
                 else:
-                    
-                    continue
-                
-                if(add_cons_to_conflict):
-                    if(bool_array[x] not in conflict_array):
-                        conflict_array.append(bool_array[x])
-                    if(bool_array[i] not in conflict_array):
-                        conflict_array.append(bool_array[i])
-        done_arr.append(bool_array[i])
-        
-    return conflict_array
+                  print(f"The foreign key table '{table}' does not have attribute '{column_name}'")
+          else:
+            print(foreign_constraint,"is not a valid foreign constraint.It should be of format (column name:table name).")
+      else:
+        print(foreign_constraint,"is not a valid foreign constraint.It should be (column name:table name).")
+  else:
+    print(foreign_constraint, "is not a valid foreign constraint.It should be (column name:table name).")
+  return isvalid
 
-def input_foreign_constraints(table_name,dic_para,forgn_cons):
-    cons = input()
-    cons = cons.strip()    
-    if(cons.casefold() != 'quit'):
-        isvalid = check_cons_format(cons,table_name,dic_para)
+def validate_decomp(fds, attributes):
+  normalForm = get_nf(fds, attributes)
+  print("Normal Forem:::",normalForm)
+  if(normalForm not in ['BCNF','3NF']):
+    while(normalForm not in ['BCNF','3NF']):
+      mvds = []
+      decompose_nf(table_name,dic_para,fds,mvds)
+  else:
+    ask_for_keys(table_name,dic_para)
 
-        if(isvalid == True):
-            forgn_cons.append(cons.upper())
+def input_key(attributes, fds):
+  pass
+
+def input_table_info(db):
+  table_name = input_table_name()
+  attributes = input_table_attributes()
+  boolean_constraints = input_boolean_constraints(attributes)
+  fds = input_fd(list(attributes.keys()))
+  # mvds = input_mvd(list(attributes.keys()))
+  mvds = []
+  foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
+  # foreign_constraints = {}
+  # TODO
+  # fds = validate_decomp(fds, attributes)
+  # keys = input_key(attributes, fds)
+  keys = list(attributes)
+  return {'name': table_name, 'attributes': attributes, 'fds': fds, 'mvds': mvds, 'boolean_constraints': boolean_constraints, 'key': keys, 'foreign_key_constraints': foreign_constraints}
+
+def input_tuple(table, table_mapping):
+  # row = input("Enter the tuple: Eg: ")
+  print(f"Insert values of {table.attributes} into '{table.name}':") 
+  row = {} 
+  for attr in table.attributes: 
+    attr_value = input(f"value of {attr} : ") 
+    row[attr] = attr_value 
+  valid = validate_row(row)
+  tables = table.demanding_new_tuple_tables(row, table_mapping)
+  for dependent_table in tables:
+    print("Additional tuples required for foreign key constraint tables:")
+    input_tuple(dependent_table, table_mapping)
+  if valid:
+    table.insert_tuple(row_data=row)
+  else:
+    print("Failed to input tuple")
+
+def validate_row(row):
+  return True
+
+def enter_table(tables):
+  table_name = input("Enter the name of the table:/ Type quit to exit: ").strip().upper()
+  if table_name.lower() == 'quit':
+    return
+  table = tables.get(table_name)
+  if not table:
+    print("Table does not exist")
+    enter_table(tables)
+  return table
+
+def delete_tuple(table):
+  conditons = input("Enter the condition: Eg: A:1, B:2").strip()
+  conditions = conditons.split(',')
+  query = {}
+  for condition in conditions:
+    key, value = condition.strip().split(':')
+    if not key or not value:
+      print("Invalid Input condition")
+      return
+    query[key] = value
+  table.delete_tuples(query)
+
+def find_tuple(table):
+  query = input("Enter the query Eg: A == 1 | A == 2 & C != 1").strip()
+  table.find_tuples(query)
+
+def group_tuples(table):
+  attributes = input("Enter the attributes Eg: AB").strip().split()
+  table.group_tuples(attributes)
+
+def create_table(db):
+  table = input_table_info(db)
+  db.create_table(table['name'], table)
+
+def input_operation(db, print_more_option=False, error_message=''):
+  if print_more_option:
+    more = input('Do you want to execute more data manipulations?yes/no: ').strip().lower()
+    if more != 'yes':
+      exit(0)
+    else:
+      if not db.tables:
+        print('Database empty. No tables.')
+        more = input('Do you want to create new table?yes/no: ').strip().lower()
+        if more == 'yes':
+          create_table(db)
         else:
-            print("Enter another Constraint::")
-        input_foreign_constraints(table_name,dic_para,forgn_cons)
-    else:
-        cons_list=[]
-        for c in forgn_cons:
-            c = c.strip()
-            cons_split = c.split(":")
-            column_name = cons_split[0].upper().strip()
-            table_name = cons_split[1].upper().strip()
-            cons_list.append(column_name+":"+table_name)
-        print(cons_list)
-        dic_para.get(table_name).update({'Foreign_Constraints':cons_list})
-        
-        
-        validate_decomp(table_name,dic_para,dic_para.get(table_name).get('FD'))
+          exit(0)
+  operations = "1. Input Tuple. \n 2. Delete a tuple \n 3. Find Tuple \n 4. Group Tuples \n 5. Delete a table \n\n Two table operations: \n 6. Cross Join \n 7. Natural Join \n 8. Union \n 9. Intersection \n 10.Difference"
+  print(operations)
+  operation = input("Enter the data manipulation option from the above list/ Type quit to exit: ").strip()
+  if operation.lower() == 'quit':
+    exit(0)
+  elif operation not in [str(i) for i in range(1, 11)]:
+      print("Invalid selection of option \n")
+      input_operation(db)
 
-
-       
-       
-
-def validate_normal_form(normalForm,table_name,dic_para,fds):
+  operation = int(operation)
+  if operation in range(1, 6):
+    table = enter_table(db.tables)
     
-    valif_nf = False
-    if(normalForm in ['BCNF','3NF']):
-        valif_nf = True
+  elif operation in range(6, 11):
+    print("Enter name of two tables:")
+    print("Table 1:")
+    table1 = enter_table(db.tables)
+    if table1:
+      print("Table 2:")
+      table = enter_table(db.tables)
+      if table:
+        rdb = RelationalAlgebra(table1, table)
+  # try:
+    if not table:
+      input_operation(db.tables)
+  
+    if operation == 1:
+      input_tuple(table, db.tables)
+    elif operation == 2:
+      delete_tuple(table)
+    elif operation == 3:
+      find_tuple(table)
+    elif operation == 4:
+      group_tuples(table)
+    elif operation == 5:
+      db.drop_table(table.name)
+    elif operation == 6:  
+      print(rdb.cross_join())
+    elif operation == 7:
+      print(rdb.natural_join())
+    elif operation == 8:
+      print(rdb.union())
+    elif operation == 9:
+      print(rdb.intersection())
+    elif operation == 10:
+      print(rdb.difference())
+  # except Exception as e:
+    # print(e)
+  input_operation(db, print_more_option=True)
 
-        print("normalForm:",normalForm)
+db = Database()
+while True:
+  create_table(db)
+  input_table = input("Do you want to enter new table (Yes/No): ")
+  input_table = input_table.strip().lower()
+  if(input_table != 'yes'):
+    break
+input_operation(db)
 
-    else:
-        mvds = []
-        decompose_nf(table_name,dic_para,fds,mvds)
-
-    return valif_nf
-
-def decompose_nf(table_name,dic_para,fds,mvds):
-    mvds=[]
-    remove_type = input("Delete or Add 'table' / 'fd' :")
-    remove_type = remove_type.strip()
-    if(remove_type.casefold() == 'table'):
-        
-
-        dec_table(table_name,dic_para)
-
-
-        print("Enter 'continue' / 'quit':")
-        c = input()
-        if(c.strip().casefold() == 'continue'):
-            
-            decompose_nf(table_name,dic_para,fds,mvds)
-    elif(remove_type.casefold() == 'fd'):
-        
-        dec_fd(table_name,dic_para,fds)
-        print("Enter 'continue' / 'quit':")
-        c = input()
-        if(c.strip().casefold() == 'continue'):
-            
-            decompose_nf(table_name,dic_para,fds,mvds)
-    else:
-        print("Wrong Option type again.")
-        decompose_nf(table_name,dic_para,fds,mvds)
-        
-    
-
-def validate_decomp(table_name,dic_para,fds):
-    normalForm = get_nf(table_name,dic_para,fds)
-    print("Normal Forem:::",normalForm)
-    if(normalForm not in ['BCNF','3NF']):
-        while(normalForm not in ['BCNF','3NF']):
-            mvds = []
-            decompose_nf(table_name,dic_para,fds,mvds)
-    else:
-        ask_for_keys(table_name,dic_para)
-
-def dec_fd(table_name,dic_para,fds):
-    oper = input("You want to add / remove FD ?('add' / 'remove'): ")
-    if(oper.strip().casefold() == 'add'):
-        fd = add_fd(table_name,dic_para,fds)
-        fds.append(fd)
-        validate_decomp(table_name,dic_para,fds)
-    elif(oper.strip().casefold() == 'remove'):
-        remove_table_fd(fds,table_name,dic_para)
-    else:
-        print("Enter 'add' / 'remove': ")
-
-def dec_table(table_name,dic_para):
-    oper = input("You want to add / remove Table ?('add' / 'remove'): ")
-    if(oper.strip().casefold() == 'add'):
-        input_data()
-    elif(oper.strip().casefold() == 'remove'):
-        remove_table = input("Enter table name to remove :")
-        remove_table = remove_table.strip().upper()
-        
-        
-        dic_para.pop('key', None)
-    else:
-        print("Enter 'add' / 'remove': ")
-
-def add_fd(table_name,dic_para,fds):
-    fd = input("Enter Fd:")
-    return fd.strip()
-
-def remove_table_fd(fds,table_name,dic_para):
-    c = input("Do you want to remove any Functional Dependency (Yes/No):")
-    c = c.strip()
-    if(c.casefold() == 'yes'):
-        fds.remove(c)
-        validate_decomp(table_name,dic_para,fds)
-    else:
-        fds = dic_para.get(table_name).get('FD')
-        validate_decomp(table_name,dic_para,fds)
-
-
-
-def check_cons_format(c,table_name,dic_para):
-    isvalid = False
-    attr = []
-    table_List = []
-    for i in dic_para.get(table_name).get('attr').keys():
-        attr.append(i)
-
-    for table_name in dic_para.keys():
-        table_List.append(table_name)
 
 
     
-    if(':' in c):
-        cons_split = c.split(":")
-        if(len(cons_split) == 2):
-            column_name = cons_split[0].upper()
-            column_name = column_name.strip()
-            table_name = cons_split[1].upper()
-            table_name = table_name.strip() 
-            if(len(column_name) > 0 and len(table_name) > 0):
-                if((column_name in attr) and (table_name in table_List)):
-                    isvalid = True
-                else:
-                    if((column_name not in attr) and (table_name not in table_List)):
-                        print("both column name and table name is not in your list")
-                    elif((column_name in attr) and (table_name not in table_List)):
-                        print("Table name is not in your list")
-                    else:
-                        print("Column Name is not in your list")
-            else:
-                print(c,"is not a valid foreign constraint.It should be (column name:table name).")
-                
-        else:
-            print(c,"is not a valid foreign constraint.It should be (column name:table name).")
-            
-    else:
-        print(c,"is not a valid foreign constraint.It should be (column name:table name).")
-        
-    return isvalid
-d = input_data()
