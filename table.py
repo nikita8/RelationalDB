@@ -19,7 +19,7 @@ class Table:
     return self.__dict__
   
   def __repr__(self):
-    return f"name={self.name}, attributes={self.attributes}, fds={self.fds}, mvds={self.mvds}, boolean_constraints={self.boolean_constraints}, foreign_key_constraints={self.foreign_key_constraints}, keys={self.keys}"
+    return f"name={self.name}, attributes={self.attributes}, fds={self.fds}, mvds={self.mvds}, boolean_constraints={self.boolean_constraints}, foreign_key_constraints={self.foreign_key_constraints}, keys={self.key}"
 
   def insert_tuple(self, row_data):
     key_attributes = list(self.key)
@@ -87,7 +87,8 @@ class Table:
 
   def demands_new_tuple(self, table, row, key):
     query = ' and '.join([f"{k}=={row[k]}" for k in list(key)])
-    has_dependent_row = table.find_tuples(query=query).any()
+    print(table)
+    has_dependent_row = table.find_tuples(query=query)
     if has_dependent_row:
       return False
     return True

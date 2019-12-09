@@ -1,6 +1,6 @@
 # import pandas as pd
-from table import *
-from relational_algebra import *
+from table import Table
+from relational_algebra import RelationalAlgebra
 
 class Database:
   def __init__(self, name="new_database"):
@@ -9,7 +9,8 @@ class Database:
     self.table_dependencies = {}
   
   def create_table(self, table_name, table_data):
-    self.add_dependencies(table_data.get('foreign_key_constraints'), table_name)
+    for k, _ in table_data.get('foreign_key_constraints', {}).items():
+      self.add_dependencies(k, table_name)
     table = Table(**table_data)
     self.tables[table_name] = table
     print(f"New table {table_name} created successfully")
@@ -47,31 +48,36 @@ class Database:
       dependencies.append(dependent_table)
       self.table_dependencies[table_name] = dependencies
 
-# db = Database()
-# table_name = 'first_table'
-# second_table_name = 'second_table'
-# attributes = {'A': 'string','B':'int','C':'int','D':'int'}
-# key = 'AB'
-# table1 = db.create_table(table_name, {'name': table_name, 'attributes': attributes, 'fds': [], 'mvds': [], 'boolean_constraints': [], 'rows': [], 'key': key})
-# table1.insert_tuple(row_data={'A': 'a', 'B': 2, 'C': 3, 'D': 4})
-# table1.insert_tuple(row_data={'A': 'b', 'B': 3, 'C': 4, 'D': 5})
-# table1.insert_tuple(row_data={'A': 'c', 'B': 3, 'C': 3, 'D': 4})
-# table1.insert_tuple(row_data={'A': 'a', 'B': 3, 'C': 3, 'D': 4})
-# # table1.group_tuples(['A', 'B'])
-# # table1.delete_tuples({'A':1, 'B': 2})
-# table1.find_tuples("A == 'a' | A == 2 & C != 1")
-# # db.show_table(table_name)
+db = Database()
+table_name = 'first_table'
+second_table_name = 'second_table'
+attributes = {'A': 'string','B':'int','C':'int','D':'int'}
+key = 'AB'
+table1 = db.create_table(table_name, {'name': table_name, 'attributes': attributes, 'fds': [], 'mvds': [], 'boolean_constraints': [], 'rows': [], 'key': key})
+table1.insert_tuple(row_data={'A': 'a', 'B': 2, 'C': 3, 'D': 4})
+table1.insert_tuple(row_data={'A': 'b', 'B': 3, 'C': 4, 'D': 5})
+table1.insert_tuple(row_data={'A': 'c', 'B': 3, 'C': 3, 'D': 4})
+table1.insert_tuple(row_data={'A': 'a', 'B': 3, 'C': 3, 'D': 4})
+# table1.group_tuples(['A', 'B'])
+# table1.delete_tuples({'A':1, 'B': 2})
+table1.find_tuples("A == 'a' | A == 2 & C != 1")
+# db.show_table(table_name)
 
-# # attributes = ['A','B','G','F', 'E']
+# attributes = ['A','B','G','F', 'E']
 # table2 = db.create_table(second_table_name, {'name': second_table_name, 'attributes': attributes, 'fds': [], 'mvds': [], 'boolean_constraints': [], 'rows': [], 'key': key, 'foreign_key_constraints': table_name})
-# # table2.insert_tuple(row_data={'A': 1, 'B': 2, 'G': 10, 'F': 11, 'E': 15})
-# # table2.insert_tuple(row_data={'A': 2, 'B': 3, 'G': 10, 'F': 100, 'E': 15})
-# # table2.insert_tuple(row_data={'A': 1, 'B': 3, 'G': 100, 'F': 100, 'E': 15})
-# table2.insert_tuple(row_data={'A': 1, 'B': 2, 'C': 3, 'D': 4})
-# table2.insert_tuple(row_data={'A': 200, 'B': 3, 'C': 4, 'D': 5})
+table2 = db.create_table(second_table_name, {'name': second_table_name, 'attributes': attributes, 'fds': [], 'mvds': [], 'boolean_constraints': [], 'rows': [], 'key': key, 'foreign_key_constraints': {table_name : 'A'}})
+# table2.insert_tuple(row_data={'A': 1, 'B': 2, 'G': 10, 'F': 11, 'E': 15})
+# table2.insert_tuple(row_data={'A': 2, 'B': 3, 'G': 10, 'F': 100, 'E': 15})
+# table2.insert_tuple(row_data={'A': 1, 'B': 3, 'G': 100, 'F': 100, 'E': 15})
+table2.insert_tuple(row_data={'A': 1, 'B': 2, 'C': 3, 'D': 4})
+table2.insert_tuple(row_data={'A': 200, 'B': 3, 'C': 4, 'D': 5})
+table2.insert_tuple(row_data={'A': 500, 'B': 3, 'C': 4, 'D': 5})
+tables = table2.demanding_new_tuple_tables({'A': 500, 'B': 3, 'C': 4, 'D': 5}, db.tables)
+print(tables)
+
 # db.show_table(second_table_name)
 
-# # table1.add_associated_tables(table2)
+# table1.add_associated_tables(table2)
 
 # table1.delete_tuples({'A':200, 'B': 3})
 
