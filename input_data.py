@@ -289,16 +289,19 @@ def input_key(attributes, fds):
 def input_table_info(db):
   table_name = input_table_name()
   attributes = input_table_attributes()
-  boolean_constraints = input_boolean_constraints(attributes)
-  fds = input_fd(list(attributes.keys()))
+  # boolean_constraints = input_boolean_constraints(attributes)
+  boolean_constraints = []
+  # fds = input_fd(list(attributes.keys()))
+  fds = []
   # mvds = input_mvd(list(attributes.keys()))
   mvds = []
-  foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
-  # foreign_constraints = {}
+  # foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
+  foreign_constraints = {}
   # TODO
   # fds = validate_decomp(fds, attributes)
   # keys = input_key(attributes, fds)
   keys = list(attributes)
+
   return {'name': table_name, 'attributes': attributes, 'fds': fds, 'mvds': mvds, 'boolean_constraints': boolean_constraints, 'key': keys, 'foreign_key_constraints': foreign_constraints}
 
 def input_tuple(table, table_mapping):
@@ -344,7 +347,7 @@ def delete_tuple(table):
   table.delete_tuples(query)
 
 def find_tuple(table):
-  query = input("Enter the query Eg: A == 1 | A == 2 & C != 1").strip()
+  query = input("Enter the query separated by and(&) or or(|) Eg: A == 1 | A != 5 & B=='test'").strip()
   table.find_tuples(query)
 
 def group_tuples(table):
@@ -354,6 +357,10 @@ def group_tuples(table):
 def create_table(db):
   table = input_table_info(db)
   db.create_table(table['name'], table)
+  #add associated tables
+  for tbl in table['foreign_key_constraints'].keys():
+    table = db.tables[tbl]
+    table.add_associated_tables(db.tables[table['name']])
 
 def input_operation(db, print_more_option=False, error_message=''):
   if print_more_option:
@@ -368,19 +375,18 @@ def input_operation(db, print_more_option=False, error_message=''):
           create_table(db)
         else:
           exit(0)
-  operations = "1. Input Tuple. \n 2. Delete a tuple \n 3. Find Tuple \n 4. Group Tuples \n 5. Delete a table \n\n Two table operations: \n 6. Cross Join \n 7. Natural Join \n 8. Union \n 9. Intersection \n 10.Difference"
+  operations = "1. Input Tuple. \n 2. Delete a tuple \n 3. Find Tuple \n 4. Group Tuples \n 5. Delete a table \n\n Two table operations: \n 6. Cross Join \n 7. Natural Join \n 8. Union \n 9. Intersection \n 10.Difference \n 11. Create new table"
   print(operations)
   operation = input("Enter the data manipulation option from the above list/ Type quit to exit: ").strip()
   if operation.lower() == 'quit':
     exit(0)
-  elif operation not in [str(i) for i in range(1, 11)]:
+  elif operation not in [str(i) for i in range(1, 12)]:
       print("Invalid selection of option \n")
       input_operation(db)
 
   operation = int(operation)
   if operation in range(1, 6):
     table = enter_table(db.tables)
-    
   elif operation in range(6, 11):
     print("Enter name of two tables:")
     print("Table 1:")
@@ -390,8 +396,10 @@ def input_operation(db, print_more_option=False, error_message=''):
       table = enter_table(db.tables)
       if table:
         rdb = RelationalAlgebra(table1, table)
-  # try:
-    if not table:
+  else:
+    table = ''
+  try:
+    if operation != 11 and not table:
       input_operation(db.tables)
   
     if operation == 1:
@@ -414,8 +422,11 @@ def input_operation(db, print_more_option=False, error_message=''):
       print(rdb.intersection())
     elif operation == 10:
       print(rdb.difference())
-  # except Exception as e:
-    # print(e)
+    elif operation == 11:
+      create_table(db)
+  except Exception as e:
+    print(e)
+  db.show_table(table.name)
   input_operation(db, print_more_option=True)
 
 db = Database()
