@@ -195,7 +195,6 @@ fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
 mvd_list=['A->->B','A->-C']
 mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
 #+++++++++++++++++++
-
 print(fds_lhs)
 print(fds_rhs)
 print("here")
