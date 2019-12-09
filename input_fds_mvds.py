@@ -161,10 +161,10 @@ def take_mvd_list(mvd_list,attr1):
             mvds_lhs.append(key1)
             mvds_rhs.append(val1)
         else:
-            print("wrong input")
-            mvds_lhs=[]
-            mvds_rhs=[]
-            return mvds_lhs, mvds_rhs
+            print("MVD must be in this format: 'A->->B'")
+            # mvds_lhs=[]
+            # mvds_rhs=[]
+            # return mvds_lhs, mvds_rhs
     mvds_lhs,mvds_rhs = fds_mvds_validation(mvds_lhs,mvds_rhs,attr1,"MVD", '->->')
     return mvds_lhs,mvds_rhs
 
@@ -179,30 +179,30 @@ def take_fd_list(fd_list,attr1):
             fds_lhs.append(key1)
             fds_rhs.append(val1)
         else:
-            print("wrong input")
-            fds_lhs=[]
-            fds_rhs=[]
-            return fds_lhs, fds_rhs
+            print("FD must be in this format: 'A->B'")
+            # fds_lhs=[]
+            # fds_rhs=[]
+            # return fds_lhs, fds_rhs
     fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
     return fds_lhs, fds_rhs
 
 
-fds_lhs=[]
-fds_rhs=[]
-mdvs_lhs=[]
-mvds_rhs=[]
-#+++++++++
-attr1= "ABCD"
-fd_list=['A->B','A->B','AB->CD','AB->D']
-fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
-mvd_list=['A->->B','A->->C']
-mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
+# fds_lhs=[]
+# fds_rhs=[]
+# mdvs_lhs=[]
+# mvds_rhs=[]
+# #+++++++++
+# attr1= "ABCD"
+# fd_list=['A->B','A->B','AB->-CD','AB->D']
+# fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
+# mvd_list=['A->a->B','A->->C']
+# mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
 #+++++++++++++++++++
-print(fds_lhs)
-print(fds_rhs)
-print("here")
-print(mvds_lhs)
-print(mvds_rhs)
+# print(fds_lhs)
+# print(fds_rhs)
+# print("here")
+# print(mvds_lhs)
+# print(mvds_rhs)
 
 # #operator
 # a < 10 a >5 =valid
