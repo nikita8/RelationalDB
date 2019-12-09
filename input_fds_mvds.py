@@ -1,3 +1,4 @@
+
 def check_fd_format(s):
     s_l = len(s)
     #[A][-][>][C] FD >= 4
@@ -99,7 +100,7 @@ def fds_mvds_validation(LHS_fd,RHS_fd,attr,fd_mvd,arrow):
                     else:
                         print("Already in "+fd_mvd, str_lhs+arrow+str_rhs)
                 elif (str_lhs not in lfd or str_rhs not in rfd): 
-                    print(str_lhs,arrow,str_rhs)
+                    # print(str_lhs,arrow,str_rhs)
                     rfd.append(str_rhs)
                     lfd.append(str_lhs)
                 else:
@@ -184,15 +185,17 @@ def take_fd_list(fd_list,attr1):
             return fds_lhs, fds_rhs
     fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
     return fds_lhs, fds_rhs
+
+
 fds_lhs=[]
 fds_rhs=[]
 mdvs_lhs=[]
 mvds_rhs=[]
 #+++++++++
 attr1= "ABCD"
-fd_list=['A->B','A->','AB->CD','AB->D']
+fd_list=['A->B','A->B','AB->CD','AB->D']
 fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
-mvd_list=['A->->B','A->-C']
+mvd_list=['A->->B','A->->C']
 mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
 #+++++++++++++++++++
 print(fds_lhs)
@@ -200,3 +203,7 @@ print(fds_rhs)
 print("here")
 print(mvds_lhs)
 print(mvds_rhs)
+
+# #operator
+# a < 10 a >5 =valid
+# a < 10 a >10 = valis
