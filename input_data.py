@@ -65,6 +65,8 @@ def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=
             #   input_boolean_constraints(attributes, boolean_constraints)
             # else:
             #   return boolean_constraints
+    elif not constraints:
+      input_boolean_constraints(attributes, boolean_constraints, False)
     else:
       valid_constraints = check_boolean_constraints(constraints, attributes)
       if(valid_constraints):
@@ -122,16 +124,16 @@ def check_conflicting_constraints(boolean_constraints):
 
 def is_valid_boolean_contraints(constraint_operator, another_constraint_operator, constraint, another_cons):
   if(constraint_operator in ['>','>='] and another_constraint_operator in ['<','<='] ): 
-    if Constraint > another_cons: 
+    if constraint > another_cons: 
       return False
   elif(constraint_operator == '>' and another_constraint_operator == '>='): 
-    if Constraint != another_cons: 
+    if constraint != another_cons: 
       return False
   elif(constraint_operator == '<' and another_constraint_operator == '<='): 
     if constraint != another_cons: 
       return False
   elif(constraint_operator in ['<','<='] and another_constraint_operator in ['>','>=']): 
-    if Constraint < another_cons: 
+    if constraint < another_cons: 
       return False 
   else: 
     return False
@@ -201,10 +203,10 @@ def input_fd(attributes, fds=set(), first_time=True):
   return fds
   
 def remove_fds(fds):
-  remove_fd = input("Do you want to remove any Functional Dependency (Yes/No):")
+  remove_fd = input("Do you want to remove any Functional Dependency (Yes/No): ")
   remove_fd = remove_fd.strip()
   if(remove_fd.casefold() == 'yes'):
-    fd = input('Enter functional Dependency to remove:')
+    fd = input('Enter functional Dependency to remove: ')
     fd = fd.strip().upper()
     if(fd in fds):
       fds.discard(fd)
@@ -213,11 +215,13 @@ def remove_fds(fds):
     else:
       print('Entered fd not exists')
       remove_fds(fds)
+  elif remove_fd.casefold() != 'no':
+    remove_fds(fds)
   return fds
 
 def input_mvd(attributes, mvds=set(), first_time=True):
   if first_time:
-    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B")
+    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B: ")
   mvd = input()
   mvd = mvd.strip().upper()
   if(mvd != 'QUIT'):
@@ -234,7 +238,7 @@ def input_mvd(attributes, mvds=set(), first_time=True):
 def input_foreign_constraints(tables, attributes, table_name, foreign_constraints=set(), first_time=True):
   if first_time:
     print("Enter Foreign Constraint:-")
-    print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit:")
+    print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit: ")
   foreign_constraint = input()
   foreign_constraint = foreign_constraint.strip().upper()
   if(foreign_constraint != 'QUIT'):
@@ -297,10 +301,11 @@ def input_table_info(db):
   table_name = input_table_name()
   attributes = input_table_attributes()
   boolean_constraints = input_boolean_constraints(attributes)
-  fds = input_fd(list(attributes.keys()))
-  mvds = input_mvd(list(attributes.keys()))
-  # mvds = []
-  foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
+  # fds = input_fd(list(attributes.keys()))
+  fds = []
+  # mvds = input_mvd(list(attributes.keys()))
+  mvds = []
+  # foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
   # foreign_constraints = {}
   # TODO
   # fds = validate_decomp(fds, attributes)
@@ -311,7 +316,7 @@ def input_table_info(db):
 
 def input_tuple(table, table_mapping):
   # row = input("Enter the tuple: Eg: ")
-  print(f"Insert values of {table.attributes} into '{table.name}':") 
+  print(f"Insert values of {table.attributes} into '{table.name}': ") 
   row = {} 
   for attr in table.attributes: 
     attr_value = input(f"value of {attr} : ") 
@@ -319,7 +324,7 @@ def input_tuple(table, table_mapping):
   valid = validate_row(row)
   tables = table.demanding_new_tuple_tables(row, table_mapping)
   for dependent_table in tables:
-    print("Additional tuples required for foreign key constraint tables:")
+    print("Additional tuples required for foreign key constraint tables: ")
     input_tuple(dependent_table, table_mapping)
   if valid:
     table.insert_tuple(row_data=row)
@@ -340,7 +345,7 @@ def enter_table(tables):
   return table
 
 def delete_tuple(table):
-  conditons = input("Enter the condition: Eg: A:1, B:2").strip()
+  conditons = input("Enter the condition, Eg: A:1, B:2: ").strip()
   conditions = conditons.split(',')
   query = {}
   for condition in conditions:
@@ -352,11 +357,11 @@ def delete_tuple(table):
   table.delete_tuples(query)
 
 def find_tuple(table):
-  query = input("Enter the query separated by and(&) or or(|) Eg: A == 1 | A != 5 & B=='test'").strip()
+  query = input("Enter the query separated by and(&) or or(|) Eg: A == 1 | A != 5 & B=='test': ").strip()
   table.find_tuples(query)
 
 def group_tuples(table):
-  attributes = input("Enter the attributes Eg: AB").strip().split()
+  attributes = input("Enter the attributes Eg: AB to group attributes based on A and B: ").strip().split()
   table.group_tuples(attributes)
 
 def create_table(db):
@@ -368,24 +373,25 @@ def create_table(db):
     table.add_associated_tables(db.tables[table['name']])
 
 def input_operation(db, print_more_option=False, error_message=''):
-  if print_more_option:
-    more = input('Do you want to execute more data manipulations?yes/no: ').strip().lower()
-    if more != 'yes':
-      exit(0)
-    else:
-      if not db.tables:
-        print('Database empty. No tables.')
-        more = input('Do you want to create new table?yes/no: ').strip().lower()
-        if more == 'yes':
-          create_table(db)
-        else:
-          exit(0)
+  # if print_more_option:
+  #   more = input('Do you want to execute more data manipulations?yes/no: ').strip().lower()
+  #   if more != 'yes':
+  #     exit(0)
+  #   elif more != 'no':
+  #   else:
+  #     if not db.tables:
+  #       print('Database empty. No tables.')
+  #       more = input('Do you want to create new table?yes/no: ').strip().lower()
+  #       if more == 'yes':
+  #         create_table(db)
+  #       else:
+  #         exit(0)
   operations = "1. Input Tuple. \n 2. Delete a tuple \n 3. Find Tuple \n 4. Group Tuples \n 5. Delete a table \n\n Two table operations: \n 6. Cross Join \n 7. Natural Join \n 8. Union \n 9. Intersection \n 10.Difference \n 11. Create new table"
   print(operations)
   operation = input("Enter the data manipulation option from the above list/ Type quit to exit: ").strip()
   if operation.lower() == 'quit':
     exit(0)
-  elif operation not in [str(i) for i in range(1, 12)]:
+  elif operation not in [str(i) for i in range(1, 13)]:
       print("Invalid selection of option \n")
       input_operation(db)
 
@@ -429,10 +435,16 @@ def input_operation(db, print_more_option=False, error_message=''):
       print(rdb.difference())
     elif operation == 11:
       create_table(db)
+    elif operation == 12:
+      show_tables(db)
   except Exception as e:
     print(e)
   db.show_table(table.name)
   input_operation(db, print_more_option=True)
+
+
+def show_tables(db):
+  print(list(db.tables.keys()))
 
 db = Database()
 while True:
