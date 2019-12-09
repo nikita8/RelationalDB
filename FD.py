@@ -429,6 +429,7 @@ mvds_lhs=[]
 mvds_rhs=[]
 closure_result=''
 #################ENTER MVDs and FDs###############################
+<<<<<<< HEAD
 while(True):
     str1 = input('Enter FD or MVD  or "done" to finished \n' )
     if(str1 == 'done'):
@@ -446,6 +447,25 @@ while(True):
         mvds_rhs.append(val1)
     else:
         print("wrong input, try again",str1)
+=======
+# while(True):
+#     str1 = input('Enter FD or MVD  or "done" to finished \n' )
+#     if(str1 == 'done'):
+#         break # exit the while loop
+val= check_fd_mvd_format(str1)# return 1 for FD, 2 for MVD,and 0 wrong input with some comment
+    # if(val== 1):
+    #     print("FD:",str1)
+key1,val1 = get_fd(str1)
+fds_lhs.append(key1)
+fds_rhs.append(val1)
+    # elif(val == 2):
+    #     print("MVD",str1)
+key1,val1 = get_mvd(str1)
+mvds_lhs.append(key1)
+mvds_rhs.append(val1)
+    # else:
+    #     print("wrong input, try again",str1)
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
    
 ##########################Validata MVD and FDs####################
 attr1='ABC'
@@ -467,12 +487,21 @@ print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
 
 #####################Remove FDs or MVDs#######################
 # while(True):
+<<<<<<< HEAD
 #     usert_input = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
 #     if(str1 == 'done'):
 #         break # exit the while loop
 #     return 1 #if valid input Format(FD or MVD): however if does not match FD or MVD or will print a massage
 #     return 0 #wrong input
 #    val =  remove_fd_or_mvd(unser_input)
+=======
+    # usert_input = input('Would you like to remove an FD or MVD\nThen enter FD or MVD to be removed\n or enter "done" to finished removing\n...')
+    # if(str1 == 'done'):
+        # break # exit the while loop
+    # return 1 if valid input Format(FD or MVD): however if does not match FD or MVD or will print a massage
+    # return 0 wrong input
+val =  remove_fd_or_mvd(unser_input)
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
     
 ##########################Print FDs and MVDs###################
 # print_mvd_fd(fds_lhs,'->',fds_rhs)
@@ -487,7 +516,11 @@ print_mvd_fd(mvds_lhs,'->->',mvds_rhs)
             # closure_result = closure(attr1, str1, LHS_fd, RHS_fd)
             # closure_result = closure(LHS_fd, RHS_fd, str1, attr1)
             # print(closure_result)
+<<<<<<< HEAD
             # print(' {',seed,'}^+ :',closure(fds_lhs, fds_rhs, seed, attr1))
+=======
+print(' {',seed,'}^+ :',closure(fds_lhs, fds_rhs, seed, attr1))
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
     # else:
         # continue# continue going through loop
 # print("we will compute the key of FDs")
@@ -502,16 +535,24 @@ print('possible keys: ',possible_keys)
 #if the closure== attr then we know is a key
 for i in possible_keys:
     # key_closure = closure(attr,i,LHS_fd,RHS_fd)
-    key_closure = closure(fds_lhs, fds_rhs, i, attr)
+key_closure = closure(fds_lhs, fds_rhs, i, attr)
     #check if key_closure is equal to attr
-    key_closure = sort_Item(key_closure)#  so is ABC... and not CAB..
+key_closure = sort_Item(key_closure)#  so is ABC... and not CAB..
     # print(' {',i,'}^+ =',key_closure)
     # if a clousere(seed) == to attribue we know that it is a key
+<<<<<<< HEAD
     if(key_closure == attr):
         list_keys.append(i)
 if(list_keys):
     print('key(s) ',list_keys)
     Which_NormalForm(list_keys,fds_lhs, fds_rhs)
+=======
+if(key_closure == attr):
+    list_keys.append(i)
+# if(list_keys):
+#     print('key(s) ',list_keys)
+Which_NormalForm(list_keys,fds_lhs, fds_rhs)
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
 
 
 

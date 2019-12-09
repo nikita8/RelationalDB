@@ -41,25 +41,18 @@ def get_attribute_constrain(attr):
     # A allow repeaped attr in the same column
     # 2 for  int type
     # define range max and min
-    # 3 a > 5 or a < 6
     temp=0
     attr_constrain={}
     range_data={}
-    temp_dic={}
-    less_greater =['<','>']
     range_list = ['max_range','min_range']
-
     msg11=['Enter maximum range: ','Enter minimum range: ']
     msg22= '\nEnter costrain:\n# 1 to allow repeated atributes\n# 2 to disallow repeated atributes\n'
-    msg3 = [ '# choice 1: define max and min limits\n',
-             '# choice 2: X <  number\n',
-             '# choice 3: X > number\n']
     for i,j in attr.items():
         if(j == 1):
             print('\nAttribute: <'+i+'> with (string type)')
             while(True):
                 user_input = input(msg22)
-                user_input = is_int(user_input) # is_int() return: not int: (-1) or the actual interger
+                user_input = is_int(user_input)
                 if(user_input == -1):
                     continue
                 elif(user_input == 1 or user_input == 2):
@@ -72,91 +65,26 @@ def get_attribute_constrain(attr):
                 else:
                     print("wrong choice!!, try again")
         else:
-            # choice 1: define max and min limits
-            # choice 2: X < number
-            # choice 3: X > number
+            # define max and min
             print('\nAttribute :<'+i+'> with Integer type')
-            while(True):
-                for u in msg3:
-                    print(u)
-                user_input = input('Enter your choice: ')
-                # is_int() return: non_int: (-1) or the actual interger
-                user_input = is_int(user_input)
-                if(user_input == -1): #not int
-                    continue
-                elif (user_input > 3 or user_input < 1):
-                    print("wrong choice,try again")
-                else:# correct choice
-                    if(user_input ==  1):#choise 1:-> max and min
-                        print(msg3[user_input -1])
-                        for x in range(2):# two iteration for min and max
-                            while(True):
-                                user_input = input(msg11[x])
-                                user_input = is_int(user_input)
-                                if(user_input == -1):
-                                    continue
-                                elif(x == 1 and temp  < user_input ):
-                                    # if max < min
-                                    print('not allowed:\nmax = ',temp,' < min =',user_input)
-                                    continue
-                                elif(user_input):
-                                    temp = user_input
-                                    range_data[range_list[x]] = temp
-                                    break
-                                else:
-                                    print("wrong choice!!, try again")
-                        attr_constrain[i] = range_data  
-                        break                  
-                    elif(user_input == 2):# choice 2: X < number
-                        while(True):
-                            user_input = input(i+' < number: ')
-                            user_input = is_int(user_input)
-                            if(user_input == -1):
-                                continue
-                            else:
-                                temp_dic[less_greater[0]] = user_input
-                                break
-                        attr_constrain[i] = temp_dic
+            for x in range(2):
+                while(True):
+                    user_input = input(msg11[x])
+                    user_input = is_int(user_input)
+                    if(user_input == -1):
+                        continue
+                    elif(x == 1 and temp  < user_input ):
+
+                        # if max < min
+                        print('not allowed:\nmax = ',temp,' < min =',user_input)
+                        continue
+                    elif(user_input):
+                        # print(msg11[x],user_input)
+                        temp= user_input
+                        range_data[range_list[x]] = temp
                         break
-                    else:#choice 3
-                        while(True):
-                            user_input = input(i+' > number: ')
-                            user_input = is_int(user_input)
-                            if(user_input == -1):
-                                continue
-                            else:
-                                temp_dic[less_greater[1]] = user_input
-                                break
-                        attr_constrain[i] = temp_dic
-                        break
- 
-    return attr_constrain
-def chek_constrain(i,j,single_attr):
-    # i is a attritue:
-    # j is the constrians
-    # single_attr is the attribute to be tested
-    max_range=0
-    min_range=0
-    if( j == True or j == False):
-        if( i == single_attr and j == False):
-            print("not allowed same attribue name")
-            return False# not allow repeated attributs
-        else:
-            return True # no violation
-    else:
-        # X > num  or X < num
-        if(len(j) == 1):
-            for n,m in j.items():
-                if(n == '<'):# **** X < num
-                    if(single_attr < m):#pass
-                        return True #
                     else:
-                        print('Invalid : X < '+m)
-                        return False# vioaltion single_atrr > m
-                else:# **** X > num
-                    if(single_attr > m):# pass
-                        return True
-                    else:
+<<<<<<< HEAD
                         print('Invalid : X > '+m)
                         return False # violation single_attr < m
         else:
@@ -174,8 +102,23 @@ def chek_constrain(i,j,single_attr):
             else:
                 print("number should between",max_range,'and',min_range)
                 return False
+=======
+                        print("wrong choice!!, try again")
+            attr_constrain[i]= range_data
+    return attr_constrain
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
 
+attr=['A','B','C','D']
+list_age=[]
 
+# age_constrain(i,65,18)):
+   
+attr_type = get_attribute_type(attr)
+attr_constrain = get_attribute_constrain(attr_type)
+print(attr_type)
+print(attr_constrain)
+
+<<<<<<< HEAD
 ###
  #             
  #              attr_constrain = get_attribute_constrain(attr_type)
@@ -200,7 +143,16 @@ def chek_constrain(i,j,single_attr):
 # attr_constrain = get_attribute_constrain(attr_type)
 # print(attr_type)
 # print(attr_constrain)
+=======
 
 
+>>>>>>> b19185cc348fc2d365188bd098cba37c9cbf661f
+
+
+# attri={'A':{'min':100,'max':200},'B':{'A':False},'C':{'min':100},'D':{'min':100}}
+# for i,j in attri.items():
+#     print(i,j)
+# sub =  attri['A']
+# print(sub)
 
 

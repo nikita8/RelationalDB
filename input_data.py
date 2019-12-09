@@ -122,25 +122,14 @@ def ask_to_remove_fd(fds,table_name,dic_para):
     if(c.casefold() == 'yes'):
         remove_fd(fds,table_name,dic_para)
     else:
-        print("Final FDS:::",fds)
-        keys_list = get_fd_keys(table_name,fds)
-        normalForm = get_nf(table_name,fds)
-        # check_all_fds(fds,table_name,dic_para)
+      
         dic_para.get(table_name).update({'FD':fds})
-        dic_para.get(table_name).update({'Keys':keys_list})
-        print("NormalForm::",normalForm)
+      
+        print("Type list of MVD's / Type 'quit' to exit:")
+        mvds = []
+        input_mvd(table_name,dic_para,mvds)
         
-        forgn_cons=[]
-        print("Enter Foreign Constraint:-")
-        print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit:")
-        
-        input_foreign_constraints(table_name,dic_para,forgn_cons)
-
-        # print("Type list of MVD's / Type 'quit' to exit:")
-        # mvds = []
-        # input_mvd(table_name,dic_para,mvds)
-        
-def get_nf(table_name,fds):
+def get_nf(table_name,dic_para,fds):
     lhs=[]
     rhs=[]
     attr=[]
@@ -176,6 +165,7 @@ def remove_fd(fds,table_name,dic_para):
     remove_fd = remove_fd.strip()
     if(remove_fd.upper() in fds):
         fds.remove(remove_fd.upper())
+        print("Entered fd is removed.")
         ask_to_remove_fd(fds,table_name,dic_para)
     else:
         print('Entered fd not exists')
@@ -188,38 +178,59 @@ def input_mvd(table_name,dic_para,mvds):
         mvds.append(mvd.upper())
         input_mvd(table_name,dic_para,mvds)
     else:
+        # final_mvds_list = check_all_mvds(mvds,table_name,dic_para)
+        # dic_para.get(table_name).update({'MVD':final_mvds_list})
+
         dic_para.get(table_name).update({'MVD':mvds})
-          
-        key_dic = find_keys(table_name,dic_para)
-        ask_to_add_table()
+        
+        forgn_cons=[]
+        print("Enter Foreign Constraint:-")
+        print("Enter as 'column name:table name' (eg- A:ABC) / Type quit to exit:")
+        
+        input_foreign_constraints(table_name,dic_para,forgn_cons)
+        
     
 def ask_to_add_table():
-    print('key_dic::',key_dic)
+    
     c = input("Do you want to enter new table (Yes/No):")
     c = c.strip()
     if(c.casefold() == 'yes'):
         input_data()
     else:
-        ask_for_keys()
+        print("DIC_PARA:::",dic_para)
         
-def ask_for_keys():
+def ask_for_keys(table_name,dic_para):
     tname = input("Enter table name to enter keys of particular table / Enter 'quit' to exit:")
-    tname = tname.strip()
+    tname = tname.strip().upper()
     if(len(tname) > 0):
         if(tname.casefold() != 'quit'):
             
             key = input('Enter key for table: ')
             key = key.strip()
-            check_table_key(tname,key)
+            check_table_key(tname,key,dic_para)
+        else:
+            ask_to_add_table()
     else:
         print("Table name should not be blank")
 
-def check_table_key(table_name,key):
-    if(key.upper() in dic_para.get(table_name).get('Keys')):
-        print("Key found")
+def check_table_key(table_name,key,dic_para):
+    attr = ['A','B','C']
+    lhs = ['A','B','C']
+    rhs = ['A','B','C']
+    keys = []
+    keys_list = get_keys(attr,lhs,rhs)
+    if(key.upper() in keys_list):
+        if(dic_para.keys() in ['Keys']):
+            keys = (dic_para.get(table_name).get('Keys')).extend(keys)
+            dic_para.get(table_name).update({'Keys':keys})
+        else:
+            keys.append(key)
+            dic_para.get(table_name).update({'Keys':keys})
+            ask_for_keys(table_name,dic_para)
+
     else:
-        print('Key must be from ',dic_para.get(table_name).get('Keys'))
-        ask_for_keys()
+        print('Key must be from ',keys_list)
+        ask_for_keys(table_name,dic_para)
 
 def isAttributeInFD(i,lhs):
     for item in lhs:
@@ -488,10 +499,106 @@ def input_foreign_constraints(table_name,dic_para,forgn_cons):
             cons_list.append(column_name+":"+table_name)
         print(cons_list)
         dic_para.get(table_name).update({'Foreign_Constraints':cons_list})
-        # print("update-mvd::",dic_para)    
-        # key_dic = find_keys(table_name,dic_para)
-        # ask_to_add_table()
-        print("DIC_Para::",dic_para)
+        
+        
+        validate_decomp(table_name,dic_para,dic_para.get(table_name).get('FD'))
+
+
+       
+       
+
+def validate_normal_form(normalForm,table_name,dic_para,fds):
+    
+    valif_nf = False
+    if(normalForm in ['BCNF','3NF']):
+        valif_nf = True
+
+        print("normalForm:",normalForm)
+
+    else:
+        mvds = []
+        decompose_nf(table_name,dic_para,fds,mvds)
+
+    return valif_nf
+
+def decompose_nf(table_name,dic_para,fds,mvds):
+    mvds=[]
+    remove_type = input("Delete or Add 'table' / 'fd' :")
+    remove_type = remove_type.strip()
+    if(remove_type.casefold() == 'table'):
+        
+
+        dec_table(table_name,dic_para)
+
+
+        print("Enter 'continue' / 'quit':")
+        c = input()
+        if(c.strip().casefold() == 'continue'):
+            
+            decompose_nf(table_name,dic_para,fds,mvds)
+    elif(remove_type.casefold() == 'fd'):
+        
+        dec_fd(table_name,dic_para,fds)
+        print("Enter 'continue' / 'quit':")
+        c = input()
+        if(c.strip().casefold() == 'continue'):
+            
+            decompose_nf(table_name,dic_para,fds,mvds)
+    else:
+        print("Wrong Option type again.")
+        decompose_nf(table_name,dic_para,fds,mvds)
+        
+    
+
+def validate_decomp(table_name,dic_para,fds):
+    normalForm = get_nf(table_name,dic_para,fds)
+    print("Normal Forem:::",normalForm)
+    if(normalForm not in ['BCNF','3NF']):
+        while(normalForm not in ['BCNF','3NF']):
+            mvds = []
+            decompose_nf(table_name,dic_para,fds,mvds)
+    else:
+        ask_for_keys(table_name,dic_para)
+
+def dec_fd(table_name,dic_para,fds):
+    oper = input("You want to add / remove FD ?('add' / 'remove'): ")
+    if(oper.strip().casefold() == 'add'):
+        fd = add_fd(table_name,dic_para,fds)
+        fds.append(fd)
+        validate_decomp(table_name,dic_para,fds)
+    elif(oper.strip().casefold() == 'remove'):
+        remove_table_fd(fds,table_name,dic_para)
+    else:
+        print("Enter 'add' / 'remove': ")
+
+def dec_table(table_name,dic_para):
+    oper = input("You want to add / remove Table ?('add' / 'remove'): ")
+    if(oper.strip().casefold() == 'add'):
+        input_data()
+    elif(oper.strip().casefold() == 'remove'):
+        remove_table = input("Enter table name to remove :")
+        remove_table = remove_table.strip().upper()
+        
+        
+        dic_para.pop('key', None)
+    else:
+        print("Enter 'add' / 'remove': ")
+
+def add_fd(table_name,dic_para,fds):
+    fd = input("Enter Fd:")
+    return fd.strip()
+
+def remove_table_fd(fds,table_name,dic_para):
+    c = input("Do you want to remove any Functional Dependency (Yes/No):")
+    c = c.strip()
+    if(c.casefold() == 'yes'):
+        fds.remove(c)
+        validate_decomp(table_name,dic_para,fds)
+    else:
+        fds = dic_para.get(table_name).get('FD')
+        validate_decomp(table_name,dic_para,fds)
+
+
 
 def check_cons_format(c,table_name,dic_para):
     isvalid = False
@@ -504,7 +611,7 @@ def check_cons_format(c,table_name,dic_para):
         table_List.append(table_name)
 
 
-    print("table_List:::",table_List)
+    
     if(':' in c):
         cons_split = c.split(":")
         if(len(cons_split) == 2):
