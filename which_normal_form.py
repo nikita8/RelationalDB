@@ -24,22 +24,20 @@ def checkBCNF(keys,lhs,rhs):
         boolBCNF.append(False)
     # for the 3NF all the lhs must be key and rhs subkey
     
-    if(len(keys) == len(rhs)):
-        #check all the lhs must be key
-        for i in lhs:
-            if(i not in keys):
-                return False # one of the lhs not part of the key
-        for k in keys:
-            keyAttrs.extend(list([char for char in k]))
-        for r in range(len(rhs)):
-            if(rhs[r] not in keyAttrs):# rhs must be non key attribute for BCNF 
-                boolBCNF[r]= True
-        if(False in boolBCNF):# if there is one rhs fd that key is  than no BCNF
-            return False 
-        else:
-            return True
+    # if(len(keys) == len(rhs)):
+    #check all the lhs must be key
+    for i in lhs:
+        if(i not in keys):
+            return False # one of the lhs not part of the key
+    for k in keys:
+        keyAttrs.extend(list([char for char in k]))
+    for r in range(len(rhs)):
+        if(rhs[r] not in keyAttrs):# rhs must be non key attribute for BCNF 
+            boolBCNF[r]= True
+    if(False in boolBCNF):# if there is one rhs fd that key is  than no BCNF
+        return False 
     else:
-        return False
+        return True
     return False
 
 def check3nf(keys,lhs,rhs):
