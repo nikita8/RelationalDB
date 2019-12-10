@@ -4,7 +4,6 @@ from database import Database
 from relational_algebra import RelationalAlgebra
 from input_fds_mvds import *
 from which_normal_form import *
-import pdb
 
 db = Database()
 
@@ -79,8 +78,8 @@ def get_attr_input_type(attr):
         get_attr_input_type(attr)
 
 def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=True):
-    # try:
-      
+    try:
+  
       if first_time:
           print("Enter list of constraints / Type 'quit' to exit (Attribute op Val) Eg: A > 5:")
       constraints = input()
@@ -102,15 +101,15 @@ def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=
         if(valid_constraints):
           boolean_constraints.add(constraints)
         input_boolean_constraints(attributes, boolean_constraints, False)
-    # except Exception:
-    #   # if(KeyboardInterrupt):
-    #   #   exit(0)
-    #   # else:
-    #     print("**Invalid Boolean Constraint enter it again.")
-    #     input_boolean_constraints(attributes, boolean_constraints, False)
+    except Exception:
+      # if(KeyboardInterrupt):
+      #   exit(0)
+      # else:
+        print("**Invalid Boolean Constraint enter it again.")
+        input_boolean_constraints(attributes, boolean_constraints, False)
     # boolean_constraints = validate_boolean_constraints(boolean_constraints)
     # print("Boolean Constraints:",list(boolean_constraints))
-      return boolean_constraints
+    return boolean_constraints
 
 def ask_to_add_more(attributes,boolean_constraints):
   try:
@@ -316,7 +315,6 @@ def delete_fd(fds,attributes):
     decompose_nf(fds,attributes)
   return fds
 
-
 def input_mvd(attributes,fds,mvds=set(),first_time=True):
   try:
     # attr = ""
@@ -446,10 +444,7 @@ def decompose_nf(fds,attributes):
         decompose_nf(fds,attributes)
   else:
     print("Table normal Form:",normal_form)
-
   return fds,True    
-        
-    
 
 def get_normal_form(table_keys,fds_lhs,fds_rhs):
   normal_form = Which_NormalForm(table_keys,fds_lhs,fds_rhs)
@@ -469,6 +464,7 @@ def input_key(attributes,fds,table_name):
   if(key not in compute_key_table):
     print(f"You must select key from {compute_key_table}")
     input_key(attributes,fds,table_name)
+  return key
 
 def input_table_info():
   table_name = []
@@ -482,22 +478,15 @@ def input_table_info():
   attributes = input_table_attributes()
   boolean_constraints = input_boolean_constraints(attributes) or []
   fds = input_fd(list(attributes.keys()))
-  # fds = []
   mvds = input_mvd(list(attributes.keys()),fds)
-  
   foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
-  # foreign_constraints = {}
-  # TODO
   fds,is_valid_table = decompose_nf(fds,attributes)
   if not is_valid_table:
     return
-
   keys = input_key(attributes, fds,table_name)
-  # keys = ('').join(keys)
-
   return {'name': table_name, 'attributes': attributes, 'fds': fds, 'mvds': mvds, 'boolean_constraints': boolean_constraints, 'key': keys, 'foreign_key_constraints': foreign_constraints}
 
-def input_tuple(table, table_mapping):
+def input_tuple(table):
   print(f"Insert values of {table.attributes} into '{table.name}': ") 
   row = {}
   for attr in table.attributes: 
@@ -505,17 +494,16 @@ def input_tuple(table, table_mapping):
     row[attr] = attr_value 
   valid = validate_row(row, table)
   if valid:
-    tables = table.demanding_new_tuple_tables(row, table_mapping)
+    tables = table.demanding_new_tuple_tables(row, db.tables)
     for dependent_table in tables:
       print("**Additional tuples required to maintain foreign key constraint: ")
-      input_tuple(db.tables[dependent_table], table_mapping)
+      input_tuple(db.tables[dependent_table])
     table.insert_tuple(row_data=row)
   else:
     print("\n **Failed to input tuple due to violating boolean constraints.\n")
 
 def validate_row(row, table):
   valid = True
-  print(table.attributes_type)
   for attribute, data_type in table.attributes_type.items():
     if attribute in row:
       if data_type == 'int':
@@ -560,15 +548,16 @@ def validate_row(row, table):
             if op in constraints:
               operand, value = constraints.split(op)
               operand = operand.strip()
-              value = value.strip()
-              if op == '==':
-                if input_value != value:
-                  print(f"**{attribute}: {value}, Violates constraint: {constraints}")
-                  valid = False
-              elif op == '<>':
-                if input_value == value:
-                  print(f"**{attribute}: {value}, Violates constraint: {constraints}")
-                  valid = False
+              if operand == attribute:
+                value = value.strip()
+                if op == '==':
+                  if input_value != value:
+                    print(f"**{attribute}: {input_value}, Violates constraint: {constraints}")
+                    valid = False
+                elif op == '<>':
+                  if input_value == value:
+                    print(f"**{attribute}: {input_value}, Violates constraint: {constraints}")
+                    valid = False
   return valid
   
 def enter_table(tables):
@@ -648,7 +637,7 @@ def input_operation():
       input_operation()
   
     if operation == 1:
-      input_tuple(table, db.tables)
+      input_tuple(table)
     elif operation == 2:
       delete_tuple(table)
     elif operation == 3:
