@@ -13,7 +13,7 @@ class Table:
     self.rows = pd.DataFrame(rows, columns = self.attributes)
     self.foreign_key_constraints = foreign_key_constraints
     self.associated_tables = []
-    # self.set_column_types(attributes)
+    self.set_column_types(attributes)
 
   def to_dict(self):
     return self.__dict__
@@ -41,8 +41,8 @@ class Table:
     self.rows.drop(matched_rows_index, inplace=True)
     if parent: print(f"Deleted {rows_count} tuples.") 
 
-  def find_tuples(self, query):
-    print(f"Rows based on query: {query}")
+  def find_tuples(self, query, print_message=True):
+    if print_message: print(f"Rows based on query: {query}")
     print(self.rows.query(query))
     print("-------------------------------")
 
@@ -87,8 +87,7 @@ class Table:
 
   def demands_new_tuple(self, table, row, key):
     query = ' and '.join([f"{k}=={row[k]}" for k in list(key)])
-    print(table)
-    has_dependent_row = table.find_tuples(query=query)
+    has_dependent_row = table.find_tuples(query=query, print_message=False)
     if has_dependent_row:
       return False
     return True
