@@ -1,13 +1,24 @@
 
+def powerset(s):
+    x = len(s)
+    masks = [1 << i for i in range(x)]
+    for i in range(1,1 << x):
+        yield [ss for mask, ss in zip(masks, s) if i & mask]
 def check_fd_format(s):
     s_l = len(s)
+    if(s_l == 0):
+        print("No FD list was passed to check")
+        return 0
     #[A][-][>][C] FD >= 4
     if(s_l < 4):
         print("an FD must in this format: 'A->B' ")
+        print("yours is in this form",s_l)
         return 0
     # Check if X is alphabet and Y is alphabet: X->Y
     # here we check if '-' is fallowed by'>'
     if(not(s[0].isalpha() and s[s_l-1].isalpha())):
+        print("an FD must in this format: 'A->B' ")
+        print("yours is in this form",s_l)
         return 0
     for i in range(1,s_l-1):
         if(s[i] == '-' ):
@@ -15,16 +26,25 @@ def check_fd_format(s):
                 return 1
         else:
             continue
+    print("an FD must in this format: 'A->B' ")
+    print("yours is in this form",s_l)
     return 0
+def print_fds_mvds(lhs,rhs,arrow):
+    for i in range(len(lhs)):
+        print(lhs[i],arrow,rhs[i])
+
 def check_mvd_format(s):
     s_l = len(s)
     #[A][-][>][C] FD >= 4
     if(s_l < 6):
         print("an MVD must be in this format: 'A->->B'")
+        print("yours is in this form",s_l)
         return 0
     # Check if X is alphabet and Y is alphabet: X->->Y
     # here we check if '-' is fallowed by'>'
     if(not(s[0].isalpha() and s[s_l-1].isalpha())):
+        print("an MVD must be in this format: 'A->->B'")
+        print("yours is in this form",s_l)
         return 0
     for i in range(1,s_l-1):
         if(s[i] == '-' ):
@@ -32,6 +52,8 @@ def check_mvd_format(s):
                 return 1
         else:
             continue
+    print("an MVD must be in this format: 'A->->B'")
+    print("yours is in this form",s_l)
     return 0
 def get_fd(s):
     s_l = len(s)
@@ -75,11 +97,6 @@ def get_mvd(s):
     #return LHS and RHS of the MVD
     return str_LHS,str_RHS
 
-
-#  fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
-
-#  mvds_lhs,mvds_rhs = fds_mvds_validation(mvds_lhs,mvds_rhs,attr1,"MVD", '->->')
-
 def fds_mvds_validation(LHS_fd,RHS_fd,attr,fd_mvd,arrow):
     rfd=[]
     lfd=[]
@@ -90,12 +107,20 @@ def fds_mvds_validation(LHS_fd,RHS_fd,attr,fd_mvd,arrow):
             #check if rhs and lhs is in atribute 
             if(str_rhs in attr and str_lhs in attr):
                 # check if not self reflective A->A and are not repeated
+                lfd_subset =[]
+                str_tmp=''
+                for k in lfd:
+                    sub_k = list(powerset(list(k)))
+                    for m in sub_k:
+                        str_m=''.join(map(str,m))
+                        lfd_subset.append(str_m)
                 if(str_lhs == str_rhs):
                     print("trivial "+fd_mvd,str_lhs,arrow,str_rhs)
-                elif(str_lhs in lfd and str_rhs in rfd): 
+
+                elif(str_lhs in lfd and str_rhs in rfd or str_lhs in  lfd_subset and str_rhs in rfd ): 
                     index_rhs = rfd.index(str_rhs)
                     if(not lfd[index_rhs] == str_lhs ):#check for weak fds
-                        print("weak "+fd_mvd+":",lfd[index_rhs]+arrow+str_rhs,"replace by",str_lhs+arrow+str_rhs)
+                        print("Superfluous "+fd_mvd+":",lfd[index_rhs]+arrow+str_rhs,"replace by",str_lhs+arrow+str_rhs)
                         lfd[index_rhs] = str_lhs
                     else:
                         print("Already in "+fd_mvd, str_lhs+arrow+str_rhs)
@@ -104,7 +129,7 @@ def fds_mvds_validation(LHS_fd,RHS_fd,attr,fd_mvd,arrow):
                     rfd.append(str_rhs)
                     lfd.append(str_lhs)
                 else:
-                    continue
+                    pass
             else:
                 if(str_lhs not in attr):
                     print(str_lhs,'not in Atrribute:',attr)
@@ -144,12 +169,24 @@ def fds_mvds_validation(LHS_fd,RHS_fd,attr,fd_mvd,arrow):
                         rfd.append(str_rhs[x]) # add RHS
                         lfd.append(str_lhs)    # add LHS
                     else:
-                        print("weak",fd_mvd,":",str_lhs,arrow,str_rhs[x])
-
-
+                        print("Superfluous",fd_mvd,":",str_lhs,arrow,str_rhs[x])
                     x = x + 1
     #return LHS and RHS lists
     return lfd,rfd
+def remove_trival_mvd(mvd_lhs,mvd_rhs, fd_lhs,fd_rhs):
+    for i in range(len(mvd_rhs)):
+        if(mvd_rhs[i] in fd_rhs):
+            fd_index = fd_rhs.index(mvd_rhs[i])
+            if(mvd_lhs[i] == fd_lhs[fd_index]):
+                # print("Trivial Already in FD:",mvd_lhs[i],'->->',mvd_rhs[i])
+                print('Triviliaze MVD:',mvd_lhs[i]+'->->'+mvd_rhs[i],'by FD:',fd_lhs[fd_index]+'->'+fd_rhs[fd_index])
+                mvd_rhs[i]='-'
+                mvd_lhs[i]='-'
+    while('-' in mvd_rhs):
+        mvd_rhs.remove('-')
+        mvd_lhs.remove('-')
+    return mvd_lhs,mvd_rhs
+    
 def take_mvd_list(mvd_list,attr1):
     mvds_lhs=[]
     mvds_rhs=[]
@@ -171,6 +208,8 @@ def take_mvd_list(mvd_list,attr1):
 def take_fd_list(fd_list,attr1):
     fds_lhs=[]
     fds_rhs=[]
+    if(len(fd_list) == 0):
+        return fds_lhs, fds_rhs
     for i in fd_list:
         val= check_fd_format(i)# return 1 for FD, 0 wrong input with some comment
         if(val== 1):
@@ -186,24 +225,3 @@ def take_fd_list(fd_list,attr1):
     fds_lhs,fds_rhs = fds_mvds_validation(fds_lhs,fds_rhs,attr1,"FD", "->")
     return fds_lhs, fds_rhs
 
-
-# fds_lhs=[]
-# fds_rhs=[]
-# mdvs_lhs=[]
-# mvds_rhs=[]
-# #+++++++++
-# attr1= "ABCD"
-# fd_list=['A->B','A->B','AB->-CD','AB->D']
-# fds_lhs,fds_rhs = take_fd_list(fd_list,attr1)
-# mvd_list=['A->a->B','A->->C']
-# mvds_lhs, mvds_rhs = take_mvd_list(mvd_list,attr1)
-#+++++++++++++++++++
-# print(fds_lhs)
-# print(fds_rhs)
-# print("here")
-# print(mvds_lhs)
-# print(mvds_rhs)
-
-# #operator
-# a < 10 a >5 =valid
-# a < 10 a >10 = valis

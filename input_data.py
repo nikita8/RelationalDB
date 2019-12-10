@@ -2,6 +2,9 @@ import re
 import numpy as np
 from database import Database
 from relational_algebra import RelationalAlgebra
+from input_fds_mvds import *
+from which_normal_form import *
+import pdb
 
 db = Database()
 
@@ -14,7 +17,7 @@ def input_table_name():
     if not table_name:
       print("**Table name cannot be blank")
       input_table_name()
-  except:
+  except Exception:
     if(KeyboardInterrupt):
         exit(0)
     else:
@@ -48,7 +51,7 @@ def input_table_attributes():
         continue
       attributes[attr_input] = attr_input_type
       num_attr += 1 
-  except:
+  except Exception:
     if(KeyboardInterrupt):
         exit(0)
     else:
@@ -68,7 +71,7 @@ def get_attr_input_type(attr):
       else:
         attr_input_type = 'int'
       return attr_input_type
-    except:
+    except Exception:
       if(KeyboardInterrupt):
         exit(0)
       else:
@@ -97,10 +100,10 @@ def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=
         if(valid_constraints):
           boolean_constraints.add(constraints)
         input_boolean_constraints(attributes, boolean_constraints, False)
-    except:
-      if(KeyboardInterrupt):
-        exit(0)
-      else:
+    except Exception:
+      # if(KeyboardInterrupt):
+      #   exit(0)
+      # else:
         print("**Invalid Boolean Constraint enter it again.")
         input_boolean_constraints(attributes, boolean_constraints, False)
     # boolean_constraints = validate_boolean_constraints(boolean_constraints)
@@ -118,7 +121,7 @@ def ask_to_add_more(attributes,boolean_constraints):
       else:
         print("**Invalid Option")
         ask_to_add_more(attributes,boolean_constraints)
-  except:
+  except Exception:
     if(KeyboardInterrupt):
         exit(0)
     else:
@@ -138,7 +141,7 @@ def validate_boolean_constraints(boolean_constraints):
           boolean_constraints = boolean_constraints - conflicting_constraints
       else:
           print('There is no conflicting boolean constraints.')
-    except:
+    except Exception:
       if(KeyboardInterrupt):
         exit(0)
       else:
@@ -184,7 +187,7 @@ def check_conflicting_constraints(boolean_constraints):
           continue
 
       
-  except:
+  except Exception:
     if(KeyboardInterrupt):
         exit(0)
     else:
@@ -237,7 +240,7 @@ def check_boolean_constraints(boolean_constraint, attributes):
       print("**Given Boolean constraint attribute is not valid")
       print("**Boolean Constraint attribute must be table attributes:",table_attributes)
       print("Add another boolean constraint:")
-  except:
+  except Exception:
     if(KeyboardInterrupt):
         exit(0)
     else:
@@ -260,55 +263,100 @@ def is_valid_contraints(boolean_attribute, boolean_operator, boolean_value, attr
   return True
     
 def input_fd(attributes, fds=set(), first_time=True):
-  if first_time:
-    print("Enter FD's / Type 'quit' to exit and Press enter to add another fd: Eg: A->B")
-  fd = input()
-  fd = fd.strip().upper() 
-  if(fd != 'QUIT'):
-    fds.add(fd)
-    input_fd(attributes,fds,False)
-  else:
-    # lhs_fd, rhs_fd = take_fd_list(fds, attributes)
-    # fds = set()
-    # for lhs, rhs in zip(lhs_fd, rhs_fd):
-    #   fds.add(f"{lhs}->{rhs}")
-    # print("Valid Fds: ", fds)
-    if fds:
-      fds = remove_fds(fds)
-  return fds
+  # try:
+    attr = ""
+    attr = attr.join(attributes)
+    if first_time:
+      print("Enter FD's / Type 'quit' to exit and Press enter to add another fd: Eg: A->B")
+    fd = input()
+    fd = fd.strip().upper() 
+    if(fd != 'QUIT'):
+      fds.add(fd)
+      input_fd(attributes,fds,False)
+    else:
+      lhs_fd, rhs_fd = take_fd_list(fds, attr)
+      fds = set()
+      for lhs, rhs in zip(lhs_fd, rhs_fd):
+        fds.add(f"{lhs}->{rhs}")
+      print("Valid Fds: ",fds)
+    
+      fds = delete_fd(fds)
+  # except Exception:
+  #   if(KeyboardInterrupt):
+  #     exit(0)
+  #   else:
+  #     print("Invalid Fd enter in again")
+  #     input_fd(attributes,fds,False)
+    return fds
   
-def remove_fds(fds):
-  remove_fd = input("Do you want to remove any Functional Dependency (Yes/No): ")
+def delete_fd(fds):
+  remove_fd = input("Do you want to remove any Functional Dependency (Yes/No):")
   remove_fd = remove_fd.strip()
   if(remove_fd.casefold() == 'yes'):
-    fd = input('Enter functional Dependency to remove: ')
+    fd = input('Enter functional Dependency to remove:')
     fd = fd.strip().upper()
     if(fd in fds):
       fds.discard(fd)
       print(f"Fd '{fd}' is removed.")
-      remove_fds(fds)
+      delete_fd(fds)
     else:
       print('Entered fd not exists')
-      remove_fds(fds)
-  elif remove_fd.casefold() != 'no':
-    remove_fds(fds)
+      delete_fd(fds)
   return fds
+# def delete_fd(fds):
+#   rm_fd = input("Do you want to remove any Functional Dependency (Yes/No): ")
+#   rm_fd = rm_fd.strip()
+#   rm_fd = rm_fd.casefold()
+#   print(rm_fd)
+#   if rm_fd == "yes":
+#     fd = input('Enter functional Dependency to remove: ')
+#     fd = fd.strip().upper()
+#     if(fd in fds):
+#       fds.discard(fd)
+#       print(f"Fd '{fd}' is removed.")
+#       delete_fd(fds)
+#     else:
+#       print('Entered fd not exists')
+#       delete_fd(fds)
+#   elif rm_fd not in ["no","yes"]:
+#     print("Invalid Option")
+#     delete_fd(fds)
+#   elif rm_fd == "no":
+#     return fds
+ 
 
-def input_mvd(attributes, mvds=set(), first_time=True):
-  if first_time:
-    print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B: ")
-  mvd = input()
-  mvd = mvd.strip().upper()
-  if(mvd != 'QUIT'):
-    mvds.add(mvd)
-    input_mvd(attributes, mvds, False)
-  else:
-    # lhs_mvd, rhs_mvd = take_mvd_list(mvds, attributes)
-    # mvds = set()
-    # for lhs, rhs in zip(lhs_mvd, rhs_mvd):
-    #   mvds.add(f"{lhs}->->{rhs}")
-    print("Valid MVDs: ", mvds)
-  return mvds
+def input_mvd(attributes,fds,mvds=set(),first_time=True):
+  # try:
+    # attr = ""
+    attr = "".join(attributes)
+    print(attr)
+    if first_time:
+      print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B: ")
+    mvd = input()
+    mvd = mvd.strip().upper()
+    if(mvd != 'QUIT'):
+      mvds.add(mvd)
+      input_mvd(attributes,fds,mvds,False)
+    else:
+      
+      mvds_lhs,mvds_rhs = take_mvd_list(mvds,attr)
+      fds_lhs = []
+      fds_rhs = []
+      for fd in fds:
+        fd_lhs,fd_rhs = fd.split("->")
+        fds_lhs.append(fd_lhs)
+        fds_rhs.append(fd_rhs)
+
+      mvds_lhs, mvds_rhs=remove_trival_mvd(mvds_lhs,mvds_rhs,fds_lhs,fds_rhs)
+      mvds = set()
+      for lhs, rhs in zip(mvds_lhs, mvds_rhs):
+        mvds.add(f"{lhs}->->{rhs}")
+      print("Valid MVDs: ", mvds)
+    return mvds
+  # except Exception:
+  #     print("Invalid FD to remove. Enter it again")
+  #     input_mvd(attributes,fds,mvds, False)
+
         
 def input_foreign_constraints(tables, attributes, table_name, foreign_constraints=set(), first_time=True):
   if first_time:
@@ -358,33 +406,93 @@ def check_format(foreign_constraint, attr, tables, current_table):
     print("**", foreign_constraint, "is not a valid foreign constraint.It should be (column name:table name).")
   return isvalid
 
-def validate_decomp(fds, attributes):
-  normalForm = get_nf(fds, attributes)
-  print("Normal Forem:::",normalForm)
-  if(normalForm not in ['BCNF','3NF']):
-    while(normalForm not in ['BCNF','3NF']):
-      mvds = []
-      decompose_nf(table_name,dic_para,fds,mvds)
-  else:
-    ask_for_keys(table_name,dic_para)
+# def validate_decomp(fds, attributes):
+#   attr = ('').join(attributes)
+#   for fd in fds:
+#     fd_lhs,fd_rhs = fd.split("->")
+#     fds_lhs.append(fd_lhs)
+#     fds_rhs.append(fd_rhs)
+#   table_keys = get_keys(fds_lhs,fds_rhs,attr)
+#   normal_form = get_normal_form(table_keys,fds_lhs,fds_rhs)
+#   print("Table Normal Form:",normal_form)
+#   return decompose_nf(fds,attributes)
 
-def input_key(attributes, fds):
-  pass
+def decompose_nf(fds,attributes):
+  attr = ('').join(attributes)
+  fds_lhs = []
+  fds_rhs = []
+
+  for fd in fds:
+    fd_lhs,fd_rhs = fd.split("->")
+    fds_lhs.append(fd_lhs)
+    fds_rhs.append(fd_rhs)
+  table_keys = get_keys(fds_lhs,fds_rhs,attr)
+  normal_form = get_normal_form(table_keys,fds_lhs,fds_rhs)
+  print("Table Normal Form:",normal_form)
+  if(normal_form not in ['BCNF','3NF']):
+    print("Enter one of the following option to get the table to atleast 3NF?")
+    print("1. Delete Table   2. Add or Remove FD")
+    decompose_type = input().strip()
+    if(decompose_type not in ["1","2"]):
+      print("Invalid Operation Type")
+      decompose_nf(fds,attributes)
+    elif(decompose_type == "1"):
+      return fds,False
+    else:
+      print("Enter one of the ftype of FD operation?")
+      print("1. Add FD   2. Remove FD")
+      fd_type = input().strip()
+      if(fd_type not in ["1","2"]):
+        print("Invalid Operation Type")
+        decompose_nf(fds,attributes)
+      elif(fd_type == "1"):
+        fds = input_fd(attributes,fds)
+        decompose_nf(fds,attributes)
+      else:
+        fds = delete_fd(fds)
+  else:
+    print("Table normal Form:",normal_form)
+
+  return fds,True    
+        
+    
+
+def get_normal_form(table_keys,fds_lhs,fds_rhs):
+  normal_form = Which_NormalForm(table_keys,fds_lhs,fds_rhs)
+  return normal_form
+
+def input_key(attributes,fds,table_name):
+  key = input(f"Select Key for {table_name} :").strip().upper()
+  fds_lhs = []
+  fds_rhs = []
+  for fd in fds:
+    fd_lhs,fd_rhs = fd.split("->")
+    fds_lhs.append(fd_lhs)
+    fds_rhs.append(fd_rhs)
+  attr = ""
+  attr = attr.join(attributes)
+  compute_key_table = get_keys(fds_lhs,fds_rhs,attr)
+  if(key not in compute_key_table):
+    print(f"You must select key from {compute_key_table}")
+    input_key(attributes,fds,table_name)
 
 def input_table_info():
   table_name = input_table_name()
   attributes = input_table_attributes()
   boolean_constraints = input_boolean_constraints(attributes) or []
-  # fds = input_fd(list(attributes.keys()))
-  fds = []
-  # mvds = input_mvd(list(attributes.keys()))
-  mvds = []
+  fds = input_fd(list(attributes.keys()))
+  # fds = []
+  mvds = input_mvd(list(attributes.keys()),fds)
+  # mvds = []
   foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
   # foreign_constraints = {}
   # TODO
-  # fds = validate_decomp(fds, attributes)
-  # keys = input_key(attributes, fds)
-  keys = ('').join(attributes.keys())
+  fds,is_valid_table = decompose_nf(fds,attributes)
+  if not is_valid_table:
+    return
+
+  keys = input_key(attributes, fds,table_name)
+  # keys = ('').join(keys)
 
   return {'name': table_name, 'attributes': attributes, 'fds': fds, 'mvds': mvds, 'boolean_constraints': boolean_constraints, 'key': keys, 'foreign_key_constraints': foreign_constraints}
 
@@ -406,6 +514,7 @@ def input_tuple(table, table_mapping):
 
 def validate_row(row, table):
   valid = True
+  print(table.attributes_type)
   for attribute, data_type in table.attributes_type.items():
     if attribute in row:
       if data_type == 'int':
@@ -494,11 +603,12 @@ def group_tuples(table):
 
 def create_table():
   table = input_table_info()
-  db.create_table(table['name'], table)
-  #add associated tables
-  for tbl in table['foreign_key_constraints'].keys():
-    foreign_table = db.tables[tbl]
-    foreign_table.add_associated_tables(db.tables[table['name']])
+  if table:
+    db.create_table(table['name'], table)
+    #add associated tables
+    for tbl in table['foreign_key_constraints'].keys():
+      foreign_table = db.tables[tbl]
+      foreign_table.add_associated_tables(db.tables[table['name']])
 
 def input_operation():
   if not db.tables:
