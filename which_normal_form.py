@@ -23,13 +23,13 @@ def checkBCNF(keys,lhs,rhs):
     for i in range(len(lhs)):
         boolBCNF.append(False)
     # for the 3NF all the lhs must be key and rhs subkey
-<<<<<<< HEAD
+
         #check all the lhs must be key
-=======
+
     
     # if(len(keys) == len(rhs)):
     #check all the lhs must be key
->>>>>>> 07e5f4e72a3f5038471d24074e94cddf4abf75c0
+
     for i in lhs:
         if(i not in keys):
             return False # one of the lhs not part of the key
