@@ -6,121 +6,189 @@ from relational_algebra import RelationalAlgebra
 db = Database()
 
 def input_table_name():
-  table_name=input("Enter the name of the table/ Type quit to exit: ")
-  table_name = table_name.upper().strip()
-  if(table_name.casefold() == 'quit'):
-    exit(0)
-  if not table_name:
-    print("**Table name cannot be blank")
-    input_table_name()
+  try:
+    table_name=input("Enter the name of the table/ Type quit to exit: ")
+    table_name = table_name.upper().strip()
+    if(table_name.casefold() == 'quit'):
+      exit(0)
+    if not table_name:
+      print("**Table name cannot be blank")
+      input_table_name()
+  except:
+    if(KeyboardInterrupt):
+        exit(0)
+    else:
+      print("Invalid Name")
+      input_table_name()
   return table_name
 
 def input_table_attributes():
-  num_attr = 0
-  attributes = {}
-  while num_attr < 4:
-    attr_input = input("Enter single character table Attribute name / Type quit to exit (Eg: A): ")
-    attr_input = attr_input.strip().upper()
-   
-    if attr_input == 'QUIT':
-      if attributes:
-        break
-      else:
-        print("**Table should have atleast one attribute")
+  try:
+    num_attr = 0
+    attributes = {}
+    while num_attr < 4:
+      attr_input = input("Enter single character table Attribute name / Type quit to exit (Eg: A): ")
+      attr_input = attr_input.strip().upper()
+     
+      if attr_input == 'QUIT':
+        if attributes:
+          break
+        else:
+          print("**Table should have atleast one attribute")
+          continue
+      elif attr_input:
+        if not re.match('[a-zA-Z+]',attr_input): 
+          print("**Table Attributes must be only alphabets(A-Z).")
+          continue
+        attr_input_type = get_attr_input_type(attr_input)
+      elif not attr_input:
+        print("**Attribute should not be blank")
         continue
-    elif attr_input:
-      if not re.match('[a-zA-Z+]',attr_input): 
-        print("**Table Attributes must be only alphabets(A-Z).")
+      else: 
         continue
-      attr_input_type = get_attr_input_type(attr_input)
-    else: 
-      continue
-    attributes[attr_input] = attr_input_type
-    num_attr += 1 
-   
+      attributes[attr_input] = attr_input_type
+      num_attr += 1 
+  except:
+    if(KeyboardInterrupt):
+        exit(0)
+    else:
+      print("Invalid Type Option")
+      get_attr_input_type(attr)
   return attributes
 
 def get_attr_input_type(attr):
-    attr_input_type = input(f"Enter the type of attribute {attr}: 1: 'string' and 2: 'int'):")
-    attr_input_type = int(attr_input_type.strip())
-    if attr_input_type not in [1, 2]:
-      print('**Invalid Type')
-      get_attr_input_type(attr)
-    if attr_input_type == 1: 
-      attr_input_type = 'string'
-    else:
-      attr_input_type = 'int'
-    return attr_input_type
+    try:
+      attr_input_type = input(f"Enter the type of attribute {attr}: 1: 'string' and 2: 'int'):")
+      attr_input_type = int(attr_input_type.strip())
+      if attr_input_type not in [1, 2]:
+        print('**Invalid Type')
+        get_attr_input_type(attr)
+      if attr_input_type == 1: 
+        attr_input_type = 'string'
+      else:
+        attr_input_type = 'int'
+      return attr_input_type
+    except:
+      if(KeyboardInterrupt):
+        exit(0)
+      else:
+        print("Invalid Type Option")
+        get_attr_input_type(attr)
 
 def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=True):
-    if first_time:
-        print("Enter list of constraints / Type 'quit' to exit (Attribute op Val) Eg: A > 5:")
-    constraints = input()
-    constraints = constraints.strip().upper()
-    if(constraints == 'QUIT'):
-        boolean_constraints = validate_boolean_constraints(boolean_constraints)
-        if not boolean_constraints:
+    try:
+      
+      if first_time:
+          print("Enter list of constraints / Type 'quit' to exit (Attribute op Val) Eg: A > 5:")
+      constraints = input()
+      constraints = constraints.strip().upper()
+      if(constraints == 'QUIT'):
+          boolean_constraints = validate_boolean_constraints(boolean_constraints)
+          if not boolean_constraints:
             print("**Empty boolean constraints")
-            # add_more = input("Do you want to add new boolean constraints(yes/no)?")
-            # if add_more.strip().lower() == 'yes':
-            #   input_boolean_constraints(attributes, boolean_constraints)
-            # else:
-            #   return boolean_constraints
-    elif not constraints:
-      input_boolean_constraints(attributes, boolean_constraints, False)
+          print("Boolean Constraints:",list(boolean_constraints))
+          boolean_constraints = ask_to_add_more(attributes,boolean_constraints)
+          return boolean_constraints
+              
+      elif not constraints:
+        input_boolean_constraints(attributes, boolean_constraints, False)
+      else:
+        valid_constraints = check_boolean_constraints(constraints, attributes)
+        if(valid_constraints):
+          boolean_constraints.add(constraints)
+        input_boolean_constraints(attributes, boolean_constraints, False)
+    except:
+      if(KeyboardInterrupt):
+        exit(0)
+      else:
+        print("**Invalid Boolean Constraint enter it again.")
+        input_boolean_constraints(attributes, boolean_constraints, False)
+    # boolean_constraints = validate_boolean_constraints(boolean_constraints)
+    # print("Boolean Constraints:",list(boolean_constraints))
+    return boolean_constraints
+
+def ask_to_add_more(attributes,boolean_constraints):
+  try:
+      add_more_constraint = input("Do you want to add new boolean constraints(yes/no)?")
+      if add_more_constraint.strip().lower() == 'yes':
+        input_boolean_constraints(attributes, boolean_constraints)
+      elif add_more_constraint.strip().lower() == 'no':
+
+        return boolean_constraints
+      else:
+        print("**Invalid Option")
+        ask_to_add_more(attributes,boolean_constraints)
+  except:
+    if(KeyboardInterrupt):
+        exit(0)
     else:
-      valid_constraints = check_boolean_constraints(constraints, attributes)
-      if(valid_constraints):
-        boolean_constraints.add(constraints)
-      input_boolean_constraints(attributes, boolean_constraints, False)
-      return boolean_constraints
+      print("**Type Yes/No to add more boolean constraints.")
+      ask_to_add_more(attributes,boolean_constraints)
 
 def validate_boolean_constraints(boolean_constraints):
-    print("Checking for conflicting Boolean conditions...")
-    conflicting_constraints = check_conflicting_constraints(boolean_constraints)
-    if conflicting_constraints:
-        print('**Following are the conflicting boolean contraints:')
-        print(conflicting_constraints)
-        print("Removing those from boolean constraints list...")
-        # for constraints in conflicting_constraints:
-        #     boolean_constraints.remove(constraints)
-        boolean_constraints = boolean_constraints - conflicting_constraints
-    else:
-        print('There is no conflicting boolean constraints.')   
+    try:
+      print("Checking for conflicting Boolean conditions...")
+      conflicting_constraints = check_conflicting_constraints(boolean_constraints)
+      if conflicting_constraints:
+          print('**Following are the conflicting boolean contraints:')
+          print(conflicting_constraints)
+          print("Removing those from boolean constraints list...")
+          # for constraints in conflicting_constraints:
+          #     boolean_constraints.remove(constraints)
+          boolean_constraints = boolean_constraints - conflicting_constraints
+      else:
+          print('There is no conflicting boolean constraints.')
+    except:
+      if(KeyboardInterrupt):
+        exit(0)
+      else:
+        print("Unable to validate boolean Constraint")
     return  boolean_constraints
    
 def check_conflicting_constraints(boolean_constraints):
-  conflicting_contraints = set()
-  loop_constraints = set()
-  for constraint in boolean_constraints:
-    add_cons_to_conflict = False
-    loop_constraints.add(constraint)
-    validating_constraints = boolean_constraints - loop_constraints - conflicting_contraints
-    for another_constraint in validating_constraints:
-      if(constraint[0].strip() == another_constraint[0].strip()):
-        bool_split_i = re.split('\W+',constraint)
-        bool_split_x = re.split('\W+',another_constraint)
-        constraint_operator = re.findall('\W+',constraint)
-        another_constraint_operator = re.findall('\W+',another_constraint)
-        if(np.array_equal(constraint_operator,another_constraint_operator)):
-          if(bool_split_i[1] == bool_split_x[1]):
-            print('**Duplicated constraints ',constraint,'and ',another_constraint)
-            add_cons_to_conflict = True
+  try:
+    conflicting_contraints = set()
+    loop_constraints = set()
+    for constraint in boolean_constraints:
+      add_cons_to_conflict = False
+      loop_constraints.add(constraint)
+      validating_constraints = boolean_constraints - loop_constraints - conflicting_contraints
+      for another_constraint in validating_constraints:
+        if(constraint[0].strip() == another_constraint[0].strip()):
+          bool_split_i = re.split('\W+',constraint)
+          bool_split_x = re.split('\W+',another_constraint)
+          constraint_operator = re.findall('\W+',constraint)
+          another_constraint_operator = re.findall('\W+',another_constraint)
+          if(np.array_equal(constraint_operator,another_constraint_operator)):
+            if(bool_split_i[1] == bool_split_x[1]):
+              print('**Duplicated constraints ',constraint,'and ',another_constraint)
+              add_cons_to_conflict = True
+              if add_cons_to_conflict:
+                conflicting_contraints.add(constraint)
+                conflicting_contraints.add(another_constraint)
+            else:
+              print("**Same attribute cannot have different values ", constraint,'and ',another_constraint)
+              add_cons_to_conflict = True
+              if add_cons_to_conflict:
+                conflicting_contraints.add(constraint)
+                conflicting_contraints.add(another_constraint)
           else:
-            print("**Same attribute cannot have different values ", constraint,'and ',another_constraint)
+            is_valid = is_valid_boolean_contraints(constraint_operator, another_constraint_operator, bool_split_i[1], bool_split_x[1])
+            if not is_valid:
+              print("**Conflicting boolean constraints: ", constraint,'and ',another_constraint)
             add_cons_to_conflict = True
+            if add_cons_to_conflict:
+              conflicting_contraints.add(constraint)
+              conflicting_contraints.add(another_constraint)
         else:
-          is_valid = is_valid_boolean_contraints(constraint_operator, another_constraint_operator, bool_split_i[1], bool_split_x[1])
-          if not is_valid:
-            print("**Conflicting boolean constraints: ", constraint,'and ',another_constraint)
-          add_cons_to_conflict = True
-      else:
-        continue
+          continue
 
-    if add_cons_to_conflict:
-      conflicting_contraints.add(constraint)
-      conflicting_contraints.add(another_constraint)
-    
+      
+  except:
+    if(KeyboardInterrupt):
+        exit(0)
+    else:
+      print("Unable to validate conflict boolean Constraint")
   return conflicting_contraints
 
 def is_valid_boolean_contraints(constraint_operator, another_constraint_operator, constraint, another_cons):
@@ -141,33 +209,39 @@ def is_valid_boolean_contraints(constraint_operator, another_constraint_operator
   return True
 
 def check_boolean_constraints(boolean_constraint, attributes):
-  table_attributes = list(attributes.keys())
-  if boolean_constraint[0] in table_attributes:
-    splitted_constraints = re.split('\W+', boolean_constraint)
-    if( len(splitted_constraints) == 2 ):
-        attribute, contraint_value = splitted_constraints
-        if(re.findall('\W+', boolean_constraint) and attribute and contraint_value):
-            attribute = attribute.strip()
-            attr_type = attributes.get(attribute)
-            bool_operator = re.findall('\W+', boolean_constraint)[0].strip()
-            contraint_value = contraint_value.strip()
-            return is_valid_contraints(attribute, bool_operator, contraint_value, attr_type, boolean_constraint)
-        else:
-            print("**Violating boolean constraint: ", boolean_constraint)
-            print("**It must be as 'attr op val' eg:(A>10).")
-            print("Add another boolean constraint:")
-    else:
-      print("**Violating boolean constraint: ", boolean_constraint)
-      print("**It must be of format 'attr op val' eg:(A>10).")
+  try:
+    table_attributes = list(attributes.keys())
+    if boolean_constraint[0] in table_attributes:
+      splitted_constraints = re.split('\W+', boolean_constraint)
+      if( len(splitted_constraints) == 2 ):
+          attribute, contraint_value = splitted_constraints
+          if(re.findall('\W+', boolean_constraint) and attribute and contraint_value):
+              attribute = attribute.strip()
+              attr_type = attributes.get(attribute)
+              bool_operator = re.findall('\W+', boolean_constraint)[0].strip()
+              contraint_value = contraint_value.strip()
+              return is_valid_contraints(attribute, bool_operator, contraint_value, attr_type, boolean_constraint)
+          else:
+              print("**Violating boolean constraint: ", boolean_constraint)
+              print("**It must be as 'attr op val' eg:(A>10).")
+              print("Add another boolean constraint:")
+      else:
+        print("**Violating boolean constraint: ", boolean_constraint)
+        print("**It must be of format 'attr op val' eg:(A>10).")
+        print("Add another boolean constraint:")
+    elif(re.match('\W+',boolean_constraint[0])):
+      print("**",boolean_constraint, " is not valid boolean Constraint.")
+      print("**It must be as ' A>10 '.")
       print("Add another boolean constraint:")
-  elif(re.match('\W+',boolean_constraint[0])):
-    print("**",boolean_constraint, " is not valid boolean Constraint.")
-    print("**It must be as ' A>10 '.")
-    print("Add another boolean constraint:")
-  else:
-    print("**Given Boolean constraint attribute is not valid")
-    print("**Boolean Constraint attribute must be table attributes:",table_attributes)
-    print("Add another boolean constraint:")
+    else:
+      print("**Given Boolean constraint attribute is not valid")
+      print("**Boolean Constraint attribute must be table attributes:",table_attributes)
+      print("Add another boolean constraint:")
+  except:
+    if(KeyboardInterrupt):
+        exit(0)
+    else:
+      print("Unable to check boolean Constraint.")
   return False
    
 def is_valid_contraints(boolean_attribute, boolean_operator, boolean_value, attr_type, input_boolean_str):
