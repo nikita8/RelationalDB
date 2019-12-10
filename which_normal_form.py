@@ -6,11 +6,11 @@ def sort_Item(cl):
          tp_s += i
     return tp_s
 
-def powerset(s):
-    x = len(s)
-    masks = [1 << i for i in range(x)]
-    for i in range(1,1 << x):
-        yield [ss for mask, ss in zip(masks, s) if i & mask]
+# def powerset(s):
+#     x = len(s)
+#     masks = [1 << i for i in range(x)]
+#     for i in range(1,1 << x):
+#         yield [ss for mask, ss in zip(masks, s) if i & mask]
 def check_equal(lhsAttrs,keyAttrs):
     isNotKey = False
     if(lhsAttrs != keyAttrs):
@@ -23,9 +23,13 @@ def checkBCNF(keys,lhs,rhs):
     for i in range(len(lhs)):
         boolBCNF.append(False)
     # for the 3NF all the lhs must be key and rhs subkey
+
+        #check all the lhs must be key
+
     
     # if(len(keys) == len(rhs)):
     #check all the lhs must be key
+
     for i in lhs:
         if(i not in keys):
             return False # one of the lhs not part of the key
@@ -101,7 +105,12 @@ def Which_NormalForm(keys,lhs,rhs):
     return normalForm
 
 def decompose_1NF_2NF(keys,lhs,rhs):
-    keys_subset=[]
+    keys_subset =[]
+    decomp_keys =[]
+    lhs_tmp =lhs
+    rhs_tmp =rhs
+
+    str_tmp=''
     for k in keys:
         sub_k = list(powerset(list(k)))
         for m in sub_k:
@@ -128,7 +137,13 @@ def decompose_1NF_2NF(keys,lhs,rhs):
                 # 2. A is a not-primery attribute non in X
                 # Then to be in 2NF,X should not be a proper subset of any key
                 if(n in keys and lhs[i] not in keys and rhs[i] not in keys_subset):
+
                     bool2NF = True
+                    print('Decomposition:')
+                    print(lhs[i] ,'->',rhs[i])
+                    str_tmp +=lhs
+                    str_tmp +=rhs
+                    decomp_keys.append(str_tmp)
             # print('2NF' if bool2NF else '1NF')
             return(False if bool2NF else True)
 
@@ -269,9 +284,7 @@ def get_keys(fds_lhs,fds_rhs,attr):
         return attr
     # for i in range(len(fds_lhs)):
     #     print(fds_lhs[i],"->",fds_rhs[i])
-
     possible_keys = get_pos_keys(attr,fds_lhs,fds_rhs)
-
     # print('possible keys: ',possible_keys)
     # in the for loop we parse those possible keys and compute the closure
     #if the closure== attr then we know is a key

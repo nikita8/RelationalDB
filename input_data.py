@@ -79,10 +79,13 @@ def get_attr_input_type(attr):
 
 def input_boolean_constraints(attributes, boolean_constraints=set(), first_time=True):
     try:
+  
       if first_time:
           print("Enter list of constraints / Type 'quit' to exit (Attribute op Val) Eg: A > 5:")
       constraints = input()
       constraints = constraints.strip().upper()
+      constraints = constraints.replace(" ", "")
+      
       if(constraints == 'QUIT'):
           boolean_constraints = validate_boolean_constraints(boolean_constraints)
           if not boolean_constraints:
@@ -127,27 +130,28 @@ def ask_to_add_more(attributes,boolean_constraints):
       ask_to_add_more(attributes,boolean_constraints)
 
 def validate_boolean_constraints(boolean_constraints):
-    try:
-      print("Checking for conflicting Boolean conditions...")
-      conflicting_constraints = check_conflicting_constraints(boolean_constraints)
-      if conflicting_constraints:
-          print('**Following are the conflicting boolean contraints:')
-          print(conflicting_constraints)
-          print("Removing those from boolean constraints list...")
-          # for constraints in conflicting_constraints:
-          #     boolean_constraints.remove(constraints)
-          boolean_constraints = boolean_constraints - conflicting_constraints
-      else:
-          print('There is no conflicting boolean constraints.')
-    except Exception:
+  try:
+    print("Checking for conflicting Boolean conditions...")
+    conflicting_constraints = check_conflicting_constraints(boolean_constraints)
+    print("conflicting_constraints",conflicting_constraints)
+    if conflicting_constraints:
+        print('**Following are the conflicting boolean contraints:')
+        print(conflicting_constraints)
+        print("Removing those from boolean constraints list...")
+        # for constraints in conflicting_constraints:
+        #     boolean_constraints.remove(constraints)
+        boolean_constraints = boolean_constraints - conflicting_constraints
+    else:
+        print('There is no conflicting boolean constraints.')
+  except Exception:
       if(KeyboardInterrupt):
         exit(0)
       else:
         print("Unable to validate boolean Constraint")
-    return  boolean_constraints
+  return  boolean_constraints
    
 def check_conflicting_constraints(boolean_constraints):
-  try:
+  # try:
     conflicting_contraints = set()
     loop_constraints = set()
     for constraint in boolean_constraints:
@@ -158,9 +162,9 @@ def check_conflicting_constraints(boolean_constraints):
         if(constraint[0].strip() == another_constraint[0].strip()):
           bool_split_i = re.split('\W+',constraint)
           bool_split_x = re.split('\W+',another_constraint)
-          constraint_operator = re.findall('\W+',constraint)
-          another_constraint_operator = re.findall('\W+',another_constraint)
-          if(np.array_equal(constraint_operator,another_constraint_operator)):
+          constraint_operator = re.findall('\W+',constraint)[0]
+          another_constraint_operator = re.findall('\W+',another_constraint)[0]
+          if(constraint_operator == another_constraint_operator):
             if(bool_split_i[1] == bool_split_x[1]):
               print('**Duplicated constraints ',constraint,'and ',another_constraint)
               add_cons_to_conflict = True
@@ -175,39 +179,44 @@ def check_conflicting_constraints(boolean_constraints):
                 conflicting_contraints.add(another_constraint)
           else:
             is_valid = is_valid_boolean_contraints(constraint_operator, another_constraint_operator, bool_split_i[1], bool_split_x[1])
+            
             if not is_valid:
               print("**Conflicting boolean constraints: ", constraint,'and ',another_constraint)
-            add_cons_to_conflict = True
+              add_cons_to_conflict = True
             if add_cons_to_conflict:
               conflicting_contraints.add(constraint)
               conflicting_contraints.add(another_constraint)
         else:
           continue
-
-      
-  except Exception:
-    if(KeyboardInterrupt):
-        exit(0)
-    else:
-      print("Unable to validate conflict boolean Constraint")
-  return conflicting_contraints
+  # except Exception:
+  #   if(KeyboardInterrupt):
+  #       exit(0)
+  #   else:
+  #     print("Unable to validate conflict boolean Constraint")
+    return conflicting_contraints
 
 def is_valid_boolean_contraints(constraint_operator, another_constraint_operator, constraint, another_cons):
+  bool = True
+  
   if(constraint_operator in ['>','>='] and another_constraint_operator in ['<','<='] ): 
-    if constraint > another_cons: 
-      return False
+    if not constraint > another_cons: 
+      bool = False
   elif(constraint_operator == '>' and another_constraint_operator == '>='): 
-    if constraint != another_cons: 
-      return False
+    if constraint == another_cons or constraint == another_cons: 
+      bool = False
   elif(constraint_operator == '<' and another_constraint_operator == '<='): 
-    if constraint != another_cons: 
-      return False
+    if constraint == another_cons or constraint == another_cons:
+      bool = False
   elif(constraint_operator in ['<','<='] and another_constraint_operator in ['>','>=']): 
-    if constraint < another_cons: 
-      return False 
+    if not constraint < another_cons: 
+      bool = False 
+  elif(constraint_operator in ['<>','=='] and another_constraint_operator in ['<>','==']):
+    if constraint == another_cons:
+      bool = False
   else: 
-    return False
-  return True
+    bool = False
+  return bool
+  
 
 def check_boolean_constraints(boolean_constraint, attributes):
   try:
@@ -267,7 +276,8 @@ def input_fd(attributes, fds=set(), first_time=True):
     if first_time:
       print("Enter FD's / Type 'quit' to exit and Press enter to add another fd: Eg: A->B")
     fd = input()
-    fd = fd.strip().upper() 
+    fd = fd.strip().upper()
+    fd = fd.replace(" ", "")
     if(fd != 'QUIT'):
       fds.add(fd)
       input_fd(attributes,fds,False)
@@ -277,40 +287,44 @@ def input_fd(attributes, fds=set(), first_time=True):
       for lhs, rhs in zip(lhs_fd, rhs_fd):
         fds.add(f"{lhs}->{rhs}")
       print("Valid Fds: ",fds)
-    
-      fds = delete_fd(fds)
+      # return set(fds)
+      fds = delete_fd(fds,attributes)
   # except Exception:
   #   if(KeyboardInterrupt):
   #     exit(0)
   #   else:
   #     print("Invalid Fd enter in again")
   #     input_fd(attributes,fds,False)
-    return fds
+    return set(fds)
   
-def delete_fd(fds):
+def delete_fd(fds,attributes):
   remove_fd = input("Do you want to remove any Functional Dependency (Yes/No):")
   remove_fd = remove_fd.strip()
+  remove_fd = remove_fd.replace(" ", "")
   if(remove_fd.casefold() == 'yes'):
     fd = input('Enter functional Dependency to remove:')
     fd = fd.strip().upper()
     if(fd in fds):
       fds.discard(fd)
       print(f"Fd '{fd}' is removed.")
-      delete_fd(fds)
+      delete_fd(fds,attributes)
     else:
       print('Entered fd not exists')
-      delete_fd(fds)
+      delete_fd(fds,attributes)
+  elif(remove_fd.casefold() == 'no'):
+    decompose_nf(fds,attributes)
   return fds
- 
+
 def input_mvd(attributes,fds,mvds=set(),first_time=True):
   # try:
     # attr = ""
     attr = "".join(attributes)
-    print(attr)
+    
     if first_time:
       print("Enter list of MVD's / Type 'quit' to exit or Press Enter to input another MVD: Eg: A->->B: ")
     mvd = input()
     mvd = mvd.strip().upper()
+    mvd = mvd.replace(" ", "")
     if(mvd != 'QUIT'):
       mvds.add(mvd)
       input_mvd(attributes,fds,mvds,False)
@@ -319,6 +333,7 @@ def input_mvd(attributes,fds,mvds=set(),first_time=True):
       mvds_lhs,mvds_rhs = take_mvd_list(mvds,attr)
       fds_lhs = []
       fds_rhs = []
+      print("FD:::",fds)
       for fd in fds:
         fd_lhs,fd_rhs = fd.split("->")
         fds_lhs.append(fd_lhs)
@@ -328,7 +343,7 @@ def input_mvd(attributes,fds,mvds=set(),first_time=True):
       mvds = set()
       for lhs, rhs in zip(mvds_lhs, mvds_rhs):
         mvds.add(f"{lhs}->->{rhs}")
-      print("Valid MVDs: ", mvds)
+      print("Valid MVDs: ", list(mvds))
     return mvds
   # except Exception:
   #     print("Invalid FD to remove. Enter it again")
@@ -405,20 +420,21 @@ def decompose_nf(fds,attributes):
     fds_rhs.append(fd_rhs)
   table_keys = get_keys(fds_lhs,fds_rhs,attr)
   normal_form = get_normal_form(table_keys,fds_lhs,fds_rhs)
-  print("Table Normal Form:",normal_form)
+  
   if(normal_form not in ['BCNF','3NF']):
+    print("Table Normal Form:",normal_form)
     print("Enter one of the following option to get the table to atleast 3NF?")
     print("1. Delete Table   2. Add or Remove FD")
-    decompose_type = input().strip()
+    decompose_type = input("Enter Option:").strip()
     if(decompose_type not in ["1","2"]):
       print("Invalid Operation Type")
       decompose_nf(fds,attributes)
     elif(decompose_type == "1"):
       return fds,False
     else:
-      print("Enter one of the ftype of FD operation?")
+      print("Enter one of the type of FD operation?")
       print("1. Add FD   2. Remove FD")
-      fd_type = input().strip()
+      fd_type = input("Enter Option:").strip()
       if(fd_type not in ["1","2"]):
         print("Invalid Operation Type")
         decompose_nf(fds,attributes)
@@ -426,7 +442,8 @@ def decompose_nf(fds,attributes):
         fds = input_fd(attributes,fds)
         decompose_nf(fds,attributes)
       else:
-        fds = delete_fd(fds)
+        fds = delete_fd(fds,attributes)
+        decompose_nf(fds,attributes)
   else:
     print("Table normal Form:",normal_form)
   return fds,True    
@@ -452,10 +469,18 @@ def input_key(attributes,fds,table_name):
   return key
 
 def input_table_info():
+  table_name = []
+  attributes = []
+  boolean_constraints = []
+  fds = []
+  mvds = []
+  foreign_constraints = {}
+  keys = ""
   table_name = input_table_name()
   attributes = input_table_attributes()
   boolean_constraints = input_boolean_constraints(attributes) or []
   fds = input_fd(list(attributes.keys()))
+  
   mvds = input_mvd(list(attributes.keys()),fds)
   foreign_constraints = input_foreign_constraints(db.tables, attributes, table_name)
   fds,is_valid_table = decompose_nf(fds,attributes)
